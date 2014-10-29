@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-shanghai',
-    version='0.0.1',
+    version='0.0.2',
     packages=['shanghai'],
     license='MIT License',
     description='A Django app to provide JSON API resources.',
