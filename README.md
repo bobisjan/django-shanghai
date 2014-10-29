@@ -1,4 +1,4 @@
-# Django Shanghai [![Build Status](https://secure.travis-ci.org/bobisjan/django-shanghai.png?branch=next)](http://travis-ci.org/bobisjan/django-shanghai)
+# Django Shanghai [![Build Status](https://secure.travis-ci.org/bobisjan/django-shanghai.png?branch=master)](http://travis-ci.org/bobisjan/django-shanghai)
 
 A Django app to provide [JSON API](http://jsonapi.org) resources.
 
