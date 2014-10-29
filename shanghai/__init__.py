@@ -5,10 +5,18 @@ from shanghai.apps import Shanghai
 
 def autodiscover():
     """
-    Automatically discover `resources` modules in `INSTALLED_APPS`.
+    Automatically discovers `resources` modules in `INSTALLED_APPS`.
     """
 
     autodiscover_modules('resources', register_to=api)
+
+
+def autoinspect():
+    """
+    Automatically inspects registered resources.
+    """
+
+    api.inspect()
 
 
 default_app_config = 'shanghai.apps.ShanghaiConfig'

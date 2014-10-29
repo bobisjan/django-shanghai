@@ -13,7 +13,7 @@ class ShanghaiTestCase(TestCase):
         app = Shanghai()
         self.assertTrue(hasattr(app, '_registry'))
 
-        register = getattr(app, '_registry', None)
+        register = getattr(app, '_registry')
         self.assertTrue(type(register) is dict)
 
     def test_api_should_not_be_none(self):
