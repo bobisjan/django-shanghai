@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import shanghai
-from shanghai.apps import ShanghaiConfig
+from shanghai.apps import Shanghai, ShanghaiConfig
 
 
 class ShanghaiTestCase(TestCase):
@@ -10,10 +10,10 @@ class ShanghaiTestCase(TestCase):
         self.assertEqual(shanghai.default_app_config, 'shanghai.apps.ShanghaiConfig')
 
     def test_app_should_have_register_attribute(self):
-        app = shanghai.Shanghai()
+        app = Shanghai()
         self.assertTrue(hasattr(app, '_registry'))
 
-        register = getattr(app, '_registry', None)
+        register = getattr(app, '_registry')
         self.assertTrue(type(register) is dict)
 
     def test_api_should_not_be_none(self):
