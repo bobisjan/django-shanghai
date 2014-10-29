@@ -1,3 +1,6 @@
+from shanghai.http import HttpResponseNoContent
+
+
 class ObjectsMixin(object):
 
     def get_objects_data(self):
@@ -9,3 +12,9 @@ class ObjectsMixin(object):
         data = self.get_objects_data()
 
         return self.response(data)
+
+    def delete_objects(self):
+        data = self.get_objects_data()
+
+        data.delete()
+        return HttpResponseNoContent()
