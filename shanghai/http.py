@@ -8,6 +8,11 @@ class JsonApiResponse(JsonResponse):
         super(JsonApiResponse, self).__init__(data=data, **kwargs)
 
 
+class HttpResponseNoContent(HttpResponse):
+
+    status_code = 204
+
+
 class HttpResponseNotImplemented(HttpResponse):
 
     status_code = 501
