@@ -1,11 +1,23 @@
+from shanghai.http import HttpResponseNoContent
+
+
 class ObjectsMixin(object):
 
-    def get_objects_data(self):
+    def get_objects_data(self, pk=None):
         qs = self.get_queryset()
 
-        return qs.filter(pk__in=self.pk)
+        if not pk:
+            pk = self.pk
+
+        return qs.filter(pk__in=pk)
 
     def get_objects(self):
         data = self.get_objects_data()
 
         return self.response(data)
+
+    def delete_objects(self):
+        data = self.get_objects_data()
+
+        data.delete()
+        return HttpResponseNoContent()
