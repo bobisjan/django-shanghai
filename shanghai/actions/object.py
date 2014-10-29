@@ -6,11 +6,14 @@ from shanghai.http import HttpResponseNoContent
 
 class ObjectMixin(object):
 
-    def get_object_data(self):
+    def get_object_data(self, pk=None):
         qs = self.get_queryset()
 
+        if not pk:
+            pk = self.pk
+
         try:
-            obj = qs.get(pk=self.pk)
+            obj = qs.get(pk=pk)
         except models.ObjectDoesNotExist:
             return None
         else:
