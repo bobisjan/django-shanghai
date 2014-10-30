@@ -9,8 +9,9 @@ class LinkedMixin(object):
     def get_linked_relationship(self):
         return self.relationship_for(self.link)
 
-    def get_linked_resource(self):
-        relationship = self.get_linked_relationship()
+    def get_linked_resource(self, relationship=None):
+        if not relationship:
+            relationship = self.get_linked_relationship()
 
         return self.api.resource_for(relationship.target)
 
