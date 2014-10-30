@@ -9,8 +9,9 @@ class LinkedMixin(object):
     def get_linked_relationship(self):
         return self.relationship_for(self.link)
 
-    def get_linked_resource(self):
-        relationship = self.get_linked_relationship()
+    def get_linked_resource(self, relationship=None):
+        if not relationship:
+            relationship = self.get_linked_relationship()
 
         return self.api.resource_for(relationship.target)
 
@@ -74,6 +75,37 @@ class LinkedMixin(object):
             linked_objects = linked_resource.get_objects_data(pk=linked_pk)
             related_manager.add(*linked_objects)
             return HttpResponseNoContent()
+
+    def put_linked(self):
+        obj = self.get_object_data()
+        relationship = self.get_linked_relationship()
+        linked_resource = self.get_linked_resource()
+        linked_pk = self.get_linked_input_data()
+
+        if not obj:
+            return HttpResponseNotFound()
+
+        if relationship.is_belongs_to():
+            linked_obj = None
+
+            if linked_pk:
+                linked_obj = linked_resource.get_object_data(linked_pk)
+
+                if not linked_obj:
+                    return HttpResponseNotFound
+
+            relationship.set_to(obj, linked_obj)
+            obj.save(update_fields=[relationship.name])
+
+        elif relationship.is_has_many():
+            linked_objects = list()
+
+            if len(linked_pk):
+                linked_objects = linked_resource.get_objects_data(pk=linked_pk)
+
+            relationship.set_to(obj, linked_objects)
+
+        return HttpResponseNoContent()
 
     def delete_linked(self):
         obj = self.get_object_data()
