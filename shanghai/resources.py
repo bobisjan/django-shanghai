@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponseServerError
 
 import shanghai
@@ -47,12 +48,12 @@ class FetcherMixin(object):
 
 class ResponderMixin(object):
 
-    def response(self, data, serializer=None):
+    def response(self, data, serializer=None, **kwargs):
         if not serializer:
             serializer = getattr(self, 'serializer')
 
         serialized_data = serializer.serialize(data)
-        return JsonApiResponse(serialized_data)
+        return JsonApiResponse(serialized_data, **kwargs)
 
 
 class DispatcherMixin(object):
@@ -101,6 +102,15 @@ class DispatcherMixin(object):
         elif is_iterable(self.link_pk):
             return method, 'linked_objects'
 
+    def resolve_input(self):
+        import json
+
+        method = self.request.method.lower()
+
+        if method in ('post', 'put'):
+            body = self.request.body
+            return json.loads(body.decode(settings.DEFAULT_CHARSET))
+
     def dispatch(self, request, *args, **kwargs):
         setattrs(self, request=request, args=args, kwargs=kwargs)
 
@@ -112,6 +122,9 @@ class DispatcherMixin(object):
 
         if not action:
             return self.action_not_resolved()
+
+        input = self.resolve_input()
+        setattr(self, 'input', input)
 
         callback = getattr(self, '_'.join(action), self.action_not_implemented)
         return callback()
@@ -145,6 +158,8 @@ class BaseResource(FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin, obj
         self.pk = None
         self.link = None
         self.link_pk = None
+
+        self.input = None
 
     def resolve_name(self):
         # TODO resolve from class name if not specified
