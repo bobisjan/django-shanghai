@@ -1,4 +1,4 @@
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.db import models
 
 from shanghai.http import HttpResponseNoContent
@@ -31,6 +31,10 @@ class LinkedMixin(object):
 
             return relationship.get_from(obj)
 
+    def get_linked_input_data(self):
+        relationship = self.get_linked_relationship()
+        return self.input.get(relationship.target)
+
     def get_linked(self):
         data = self.get_linked_data()
 
@@ -39,6 +43,37 @@ class LinkedMixin(object):
 
         serializer = self.get_linked_serializer()
         return self.response(data, serializer=serializer)
+
+    def post_linked(self):
+        obj = self.get_object_data()
+        relationship = self.get_linked_relationship()
+
+        if not obj:
+            return HttpResponseNotFound()
+
+        if relationship.is_belongs_to():
+            link = self.get_linked_data()
+            if link:
+                return HttpResponseBadRequest()
+
+            linked_pk = self.get_linked_input_data()
+            linked_resource = self.get_linked_resource()
+            linked_object = linked_resource.get_object_data(pk=linked_pk)
+
+            relationship.set_to(obj, linked_object)
+            obj.save()
+            return HttpResponseNoContent()
+        elif relationship.is_has_many():
+            related_manager = relationship.get_from(obj)
+            linked_pk = self.get_linked_input_data()
+            linked_resource = self.get_linked_resource()
+
+            if isinstance(linked_pk, str):
+                linked_pk = linked_pk,
+
+            linked_objects = linked_resource.get_objects_data(pk=linked_pk)
+            related_manager.add(*linked_objects)
+            return HttpResponseNoContent()
 
     def delete_linked(self):
         obj = self.get_object_data()
