@@ -56,6 +56,9 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
 
         return serializer(self)
 
+    def url_pattern_name(self, *args):
+        return '-'.join([self.api.name, self.name] + list(args))
+
     def generate_urls(self):
         from django.conf.urls import patterns, url
 
@@ -64,13 +67,35 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
         link = '\w+'
 
         url_patterns = patterns('',
-            url(r'^{0}/(?P<pk>{1})/links/(?P<link>{2})/(?P<link_pk>{1})'.format(self.type, pk, link), view),
-            url(r'^{0}/(?P<pk>{1})/links/(?P<link>{2})'.format(self.type, pk, link), view),
-            url(r'^{0}/(?P<pk>{1})'.format(self.type, pk), view),
-            url(r'^{0}'.format(self.type), view),
+            url(r'^{0}/(?P<pk>{1})/links/(?P<link>{2})/(?P<link_pk>{1})'.format(self.type, pk, link), view, name=self.url_pattern_name('pk', 'link', 'link-pk')),
+            url(r'^{0}/(?P<pk>{1})/links/(?P<link>{2})'.format(self.type, pk, link), view, name=self.url_pattern_name('pk', 'link')),
+            url(r'^{0}/(?P<pk>{1})'.format(self.type, pk), view, name=self.url_pattern_name('pk')),
+            url(r'^{0}'.format(self.type), view, name=self.url_pattern_name()),
         )
 
         return url_patterns
+
+    def reverse_url(self, pk=None, link=None, link_pk=None):
+        from django.core.urlresolvers import reverse
+
+        pattern_args = list()
+        reverse_args = list()
+
+        if pk:
+            pattern_args.append('pk')
+            reverse_args.append(pk)
+
+        if link:
+            pattern_args.append('link')
+            reverse_args.append(link)
+
+        if link_pk:
+            pattern_args.append('link-pk')
+            reverse_args.append(link_pk)
+
+        name = self.url_pattern_name(*pattern_args)
+
+        return reverse(name, args=reverse_args)
 
     @property
     def urls(self):
