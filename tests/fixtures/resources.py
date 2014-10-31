@@ -1,5 +1,5 @@
 from shanghai.resources import Resource
-from shanghai import meta
+from shanghai.properties import Id, Attribute, BelongsTo, HasMany
 
 
 class ArticleResource(Resource):
@@ -7,9 +7,9 @@ class ArticleResource(Resource):
     name = 'articles'
 
     class Meta:
-        title = meta.Attribute()
-        perex = meta.Attribute()
-        category = meta.BelongsTo('categories', inverse='articles')
+        title = Attribute()
+        perex = Attribute()
+        category = BelongsTo('categories', inverse='articles')
 
 
 class CategoryResource(Resource):
@@ -17,6 +17,6 @@ class CategoryResource(Resource):
     name = 'categories'
 
     class Meta:
-        id = meta.Id()
-        title = meta.Attribute()
-        articles = meta.HasMany('articles', inverse='category')
+        id = Id()
+        title = Attribute()
+        articles = HasMany('articles', inverse='category')
