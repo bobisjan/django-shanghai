@@ -12,7 +12,7 @@ class CollectionMixin(object):
         return self.response(data)
 
     def get_collection_input_data(self):
-        return self.input.get(self.type)
+        return self.serializer.extract(self.input)
 
     def post_collection(self):
         data = self.get_collection_input_data()

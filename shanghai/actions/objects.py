@@ -9,7 +9,7 @@ class ObjectsMixin(object):
         raise NotImplementedError()
 
     def get_objects_input_data(self):
-        return self.input.get(self.type)
+        return self.serializer.extract(self.input)
 
     def get_objects(self):
         data = self.get_objects_data()
