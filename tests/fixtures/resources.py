@@ -1,8 +1,8 @@
-from shanghai.resources import BaseResource
+from shanghai.resources import Resource
 from shanghai import meta
 
 
-class ArticleResource(BaseResource):
+class ArticleResource(Resource):
 
     name = 'articles'
 
@@ -12,7 +12,7 @@ class ArticleResource(BaseResource):
         category = meta.BelongsTo('categories', inverse='articles')
 
 
-class CategoryResource(BaseResource):
+class CategoryResource(Resource):
 
     name = 'categories'
 

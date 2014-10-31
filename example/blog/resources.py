@@ -1,16 +1,16 @@
 from shanghai import api
-from shanghai.resources import Resource
+from shanghai.resources import ModelResource
 
 from .models import Article, Category
 
 
-class ArticleResource(Resource):
+class ArticleResource(ModelResource):
 
     name = 'articles'
     model = Article
 
 
-class CategoryResource(Resource):
+class CategoryResource(ModelResource):
 
     name = 'categories'
     model = Category

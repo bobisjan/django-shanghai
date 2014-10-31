@@ -130,7 +130,7 @@ class DispatcherMixin(object):
         return callback()
 
 
-class BaseResource(FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin, object):
+class Resource(FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin, object):
     """
     A base class for all resources.
     """
@@ -200,9 +200,9 @@ class BaseResource(FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin, obj
         return self.generate_urls()
 
 
-class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
-               LinkedMixin, LinkedObjectMixin, LinkedObjectsMixin,
-               BaseResource):
+class ModelResource(CollectionMixin, ObjectMixin, ObjectsMixin,
+                    LinkedMixin, LinkedObjectMixin, LinkedObjectsMixin,
+                    Resource):
     """
     A model based resource.
     """
@@ -215,6 +215,6 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
         return self.model.objects.all()
 
     def fetch_has_many(self, obj, relationship):
-        related_manager = super(Resource, self).fetch_has_many(obj, relationship)
+        related_manager = super(ModelResource, self).fetch_has_many(obj, relationship)
 
         return related_manager.all()
