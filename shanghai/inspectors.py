@@ -2,7 +2,7 @@ import inspect
 
 from django.db import models
 
-from shanghai.meta import Id, Attribute, BelongsTo, HasMany
+from shanghai.properties import Id, Attribute, BelongsTo, HasMany
 from shanghai.utils import resource_for_model
 
 
