@@ -19,7 +19,7 @@ class CollectionMixin(object):
 
         object_or_iterable = self.post_collection_data(data)
 
-        return self.response(object_or_iterable, status=201)
+        return self.response_with_location(object_or_iterable)
 
     def post_collection_data(self, data):
         raise NotImplementedError()
