@@ -24,7 +24,15 @@ class ObjectMixin(object):
         obj = self.get_object_data()
         data = self.get_object_input_data()
 
-        return self.put_object_data(obj, data)
+        if not obj:
+            return HttpResponseNotFound()
+
+        updated_object = self.put_object_data(obj, data)
+
+        if updated_object:
+            return self.response(updated_object)
+
+        return HttpResponseNoContent()
 
     def put_object_data(self, obj, data):
         raise NotImplementedError()
@@ -35,7 +43,9 @@ class ObjectMixin(object):
         if not data:
             return HttpResponseNotFound()
 
-        return self.delete_object_data(data)
+        self.delete_object_data(data)
+
+        return HttpResponseNoContent()
 
     def delete_object_data(self, data):
         raise NotImplementedError()
@@ -58,9 +68,6 @@ class ModelObjectMixin(ObjectMixin):
 
     def put_object_data(self, obj, data):
         update_fields = list()
-
-        if not obj:
-            return HttpResponseNotFound()
 
         links = dict()
         for key in data.keys():
@@ -86,7 +93,7 @@ class ModelObjectMixin(ObjectMixin):
                     linked_obj = linked_resource.get_object_data(linked_pk)
 
                     if not linked_obj:
-                        continue
+                        raise RuntimeError()
 
                 update_fields.append(key)
                 relationship.set_to(obj, linked_obj)
@@ -94,15 +101,11 @@ class ModelObjectMixin(ObjectMixin):
                 linked_objects = list()
 
                 if len(linked_pk):
-                    linked_objects = linked_resource.get_objects_data(pk=linked_pk)
+                    linked_objects = linked_resource.get_objects_data(linked_pk)
 
                 relationship.set_to(obj, linked_objects)
 
         obj.save(update_fields=update_fields)
 
-        return HttpResponseNoContent()
-
     def delete_object_data(self, data):
         data.delete()
-
-        return HttpResponseNoContent()

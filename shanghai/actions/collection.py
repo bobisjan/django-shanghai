@@ -17,7 +17,9 @@ class CollectionMixin(object):
     def post_collection(self):
         data = self.get_collection_input_data()
 
-        return self.post_collection_data(data)
+        object_or_iterable = self.post_collection_data(data)
+
+        return self.response(object_or_iterable, status=201)
 
     def post_collection_data(self, data):
         raise NotImplementedError()
@@ -34,7 +36,7 @@ class ModelCollectionMixin(CollectionMixin):
 
             obj.save()
 
-            return self.response(obj, status=201)
+            return obj
         else:
             objects = list()
 
@@ -45,4 +47,4 @@ class ModelCollectionMixin(CollectionMixin):
                     obj.save()
                     objects.append(obj)
 
-            return self.response(objects, status=201)
+            return objects

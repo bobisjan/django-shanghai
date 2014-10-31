@@ -19,7 +19,9 @@ class LinkedObjectsMixin(object):
         if not obj or not relationship.is_has_many():
             return HttpResponseNotFound()
 
-        return self.delete_linked_objects_data(data, linked_objects)
+        self.delete_linked_objects_data(data, linked_objects)
+
+        return HttpResponseNoContent()
 
     def delete_linked_objects_data(self, data, linked_objects):
         raise NotImplementedError()
@@ -29,5 +31,3 @@ class ModelLinkedObjectsMixin(LinkedObjectsMixin):
 
     def delete_linked_objects_data(self, data, linked_objects):
         data.remove(*linked_objects)
-
-        return HttpResponseNoContent()
