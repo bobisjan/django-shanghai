@@ -1,10 +1,47 @@
-from django.http import HttpResponseNotFound
 from django.db import models
+from django.http import HttpResponseNotFound
 
 from shanghai.http import HttpResponseNoContent
 
 
 class ObjectMixin(object):
+
+    def get_object_data(self, pk=None):
+        raise NotImplementedError()
+
+    def get_object_input_data(self):
+        return self.input.get(self.type)
+
+    def get_object(self):
+        data = self.get_object_data()
+
+        if not data:
+            return HttpResponseNotFound()
+
+        return self.response(data)
+
+    def put_object(self):
+        obj = self.get_object_data()
+        data = self.get_object_input_data()
+
+        return self.put_object_data(obj, data)
+
+    def put_object_data(self, obj, data):
+        raise NotImplementedError()
+
+    def delete_object(self):
+        data = self.get_object_data()
+
+        if not data:
+            return HttpResponseNotFound()
+
+        return self.delete_object_data(data)
+
+    def delete_object_data(self, data):
+        raise NotImplementedError()
+
+
+class ModelObjectMixin(ObjectMixin):
 
     def get_object_data(self, pk=None):
         qs = self.get_queryset()
@@ -19,24 +56,7 @@ class ObjectMixin(object):
         else:
             return obj
 
-    def get_object_input_data(self):
-        return self.input.get(self.type)
-
-    def get_object(self):
-        data = self.get_object_data()
-
-        if not data:
-            return HttpResponseNotFound()
-        return self.response(data)
-
-    def put_object(self):
-        obj = self.get_object_data()
-        data = self.get_object_input_data()
-
-        self._put_object(obj, data)
-        return HttpResponseNoContent()
-
-    def _put_object(self, obj, data):
+    def put_object_data(self, obj, data):
         update_fields = list()
 
         if not obj:
@@ -80,11 +100,9 @@ class ObjectMixin(object):
 
         obj.save(update_fields=update_fields)
 
-    def delete_object(self):
-        data = self.get_object_data()
+        return HttpResponseNoContent()
 
-        if not data:
-            return HttpResponseNotFound()
-
+    def delete_object_data(self, data):
         data.delete()
+
         return HttpResponseNoContent()
