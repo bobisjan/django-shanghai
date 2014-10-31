@@ -78,12 +78,16 @@ class Serializer(object):
         links[key] = link
 
     def link_for_belongs_to(self, obj, resource):
-        return self.extract_id(obj, resource)
+        if not obj:
+            return None
+
+        _id = resource.get_id()
+
+        pk = resource.fetch_id(obj, _id)
+
+        return self.normalize_id(pk)
 
     def link_for_has_many(self, objects, resource):
-        return self.extract_ids(objects, resource)
-
-    def extract_ids(self, objects, resource):
         pk = resource.get_id()
         pks = list()
 
@@ -91,14 +95,8 @@ class Serializer(object):
             _pk = pk.get_from(obj)
             _pk = self.normalize_id(_pk)
             pks.append(_pk)
-        return pks
 
-    def extract_id(self, obj, resource):
-        if not obj:
-            return None
-        pk = resource.get_id()
-        value = pk.get_from(obj)
-        return self.normalize_id(value)
+        return pks
 
     def links_for_data(self, data):
         if 'links' not in data:
@@ -123,3 +121,77 @@ class Serializer(object):
     def key_for_relationship(self, relationship):
         # TODO camelize
         return relationship.name
+
+    def extract(self, document):
+        key = self.key_for_type(self.resource.name)
+        object_or_iterable = document.get(key)
+
+        data = self.extract_object_or_iterable(object_or_iterable)
+
+        return data
+
+    def extract_object_or_iterable(self, object_or_iterable):
+        if isinstance(object_or_iterable, list):
+            return self.extract_iterable(object_or_iterable)
+        elif isinstance(object_or_iterable, dict):
+            return self.extract_object(object_or_iterable)
+
+    def extract_iterable(self, data):
+        objects = list()
+
+        for item in data:
+            objects.append(self.extract_object(item))
+
+        return objects
+
+    def extract_object(self, data):
+        obj = dict()
+
+        _id = self.resource.get_id()
+        self.extract_id(obj, data, _id)
+
+        attributes = self.resource.get_attributes()
+        for key in attributes.keys():
+            self.extract_attribute(obj, data, attributes.get(key))
+
+        if 'links' in data:
+            data_links = data.get('links')
+            links = dict()
+
+            relationships = self.resource.get_relationships()
+            for key in relationships.keys():
+                self.extract_relationship(links, data_links, relationships.get(key))
+
+            if len(links):
+                obj['links'] = links
+
+        return obj
+
+    def extract_id(self, obj, data, pk):
+        key = self.key_for_id(pk)
+
+        value = data.get(key, None)
+
+        # TODO de-normalize `id`
+        if value:
+            obj[pk.name] = value
+
+    def extract_attribute(self, obj, data, attribute):
+        key = self.key_for_attribute(attribute)
+
+        if key not in data:
+            return
+
+        value = data.get(key)
+
+        obj[attribute.name] = value
+
+    def extract_relationship(self, obj, data, relationship):
+        key = self.key_for_relationship(relationship)
+
+        if key not in data:
+            return
+
+        value = data.get(key)
+
+        obj[relationship.name] = value
