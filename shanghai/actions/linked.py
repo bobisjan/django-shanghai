@@ -16,7 +16,7 @@ class LinkedMixin(object):
         return self.api.resource_for(relationship.target)
 
     def get_linked_serializer(self):
-        resource = self.get_linked_relationship()
+        resource = self.get_linked_resource()
 
         return resource.serializer
 
