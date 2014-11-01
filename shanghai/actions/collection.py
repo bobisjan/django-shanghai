@@ -22,6 +22,17 @@ class CollectionMixin(object):
         return self.response_with_location(object_or_iterable)
 
     def post_collection_data(self, data):
+        if isinstance(data, list):
+            return self.post_collection_objects(data)
+        elif isinstance(data, dict):
+            return self.post_collection_object(data)
+        else:
+            raise RuntimeError()
+
+    def post_collection_objects(self, data):
+        raise NotImplementedError()
+
+    def post_collection_object(self, data):
         raise NotImplementedError()
 
 
@@ -30,21 +41,21 @@ class ModelCollectionMixin(CollectionMixin):
     def get_collection_data(self):
         return self.get_queryset()
 
-    def post_collection_data(self, data):
-        if isinstance(data, dict):
-            obj = self.model(**data)
+    def post_collection_object(self, data):
+        obj = self.model(**data)
 
-            obj.save()
+        obj.save()
 
-            return obj
-        else:
-            objects = list()
+        return obj
 
-            with transaction.atomic():
-                for item in data:
-                    obj = self.model(**item)
+    def post_collection_objects(self, data):
+        objects = list()
 
-                    obj.save()
-                    objects.append(obj)
+        with transaction.atomic():
+            for item in data:
+                obj = self.post_collection_object(item)
 
-            return objects
+                objects.append(obj)
+
+        return objects
+
