@@ -41,19 +41,61 @@ class ModelCollectionMixin(CollectionMixin):
     def get_collection_data(self):
         return self.get_queryset()
 
-    def post_collection_object(self, data):
+    def _post_collection_object(self, data):
+        links = dict()
+
+        if 'links' in data:
+            links = data.get('links')
+            del data['links']
+
         obj = self.model(**data)
+
+        for key in links.keys():
+            relationship = self.relationship_for(key)
+            linked_resource = self.get_linked_resource(relationship)
+            linked_pk = links.get(key)
+
+            if relationship.is_belongs_to():
+                linked_obj = None
+
+                if linked_pk:
+                    linked_obj = linked_resource.get_object_data(linked_pk)
+
+                    if not linked_obj:
+                        raise RuntimeError()
+
+                relationship.set_to(obj, linked_obj)
 
         obj.save()
 
+        for key in links.keys():
+            relationship = self.relationship_for(key)
+            linked_resource = self.get_linked_resource(relationship)
+            linked_pk = links.get(key)
+
+            if relationship.is_has_many():
+                linked_objects = list()
+
+                if len(linked_pk):
+                    linked_objects = linked_resource.get_objects_data(linked_pk)
+
+                    if len(linked_pk) != len(linked_objects):
+                        raise RuntimeError()
+
+                relationship.set_to(obj, linked_objects)
+
         return obj
+
+    def post_collection_object(self, data):
+        with transaction.atomic():
+            return self._post_collection_object(data)
 
     def post_collection_objects(self, data):
         objects = list()
 
         with transaction.atomic():
             for item in data:
-                obj = self.post_collection_object(item)
+                obj = self._post_collection_object(item)
 
                 objects.append(obj)
 
