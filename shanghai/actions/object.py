@@ -101,6 +101,7 @@ class ModelObjectMixin(ObjectMixin):
                 update_fields.append(key)
                 relationship.set_to(obj, linked_obj)
 
+        obj.full_clean()
         obj.save(update_fields=update_fields)
 
         # update `has many` relationships

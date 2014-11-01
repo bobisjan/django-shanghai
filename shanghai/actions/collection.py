@@ -66,6 +66,7 @@ class ModelCollectionMixin(CollectionMixin):
 
                 relationship.set_to(obj, linked_obj)
 
+        obj.full_clean()
         obj.save()
 
         for key in links.keys():
