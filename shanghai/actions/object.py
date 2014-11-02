@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.http import HttpResponseNotFound
 
 from shanghai.http import HttpResponseNoContent
@@ -66,21 +66,24 @@ class ModelObjectMixin(ObjectMixin):
         else:
             return obj
 
-    def put_object_data(self, obj, data):
+    def _put_object_data(self, obj, data):
         update_fields = list()
-
         links = dict()
+        _id = self.get_id()
+
+        if _id.name in data:
+            del data[_id.name]
+
+        if 'links' in data:
+            links = data.get('links')
+            del data['links']
+
+        # update attributes
         for key in data.keys():
-            if key == self.get_id().name:
-                continue
-
-            if key == 'links':
-                links = data.get(key)
-                continue
-
             update_fields.append(key)
             setattr(obj, key, data.get(key))
 
+        # update `belongs to` relationships
         for key in links.keys():
             relationship = self.relationship_for(key)
             linked_resource = self.get_linked_resource(relationship)
@@ -97,15 +100,30 @@ class ModelObjectMixin(ObjectMixin):
 
                 update_fields.append(key)
                 relationship.set_to(obj, linked_obj)
-            elif relationship.is_has_many():
+
+        obj.full_clean()
+        obj.save(update_fields=update_fields)
+
+        # update `has many` relationships
+        for key in links.keys():
+            relationship = self.relationship_for(key)
+            linked_resource = self.get_linked_resource(relationship)
+            linked_pk = links.get(key)
+
+            if relationship.is_has_many():
                 linked_objects = list()
 
                 if len(linked_pk):
                     linked_objects = linked_resource.get_objects_data(linked_pk)
 
+                    if len(linked_pk) != len(linked_objects):
+                        raise RuntimeError()
+
                 relationship.set_to(obj, linked_objects)
 
-        obj.save(update_fields=update_fields)
+    def put_object_data(self, obj, data):
+        with transaction.atomic():
+            self._put_object_data(obj, data)
 
     def delete_object_data(self, data):
         data.delete()

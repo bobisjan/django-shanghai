@@ -63,7 +63,7 @@ class ModelObjectsMixin(ObjectsMixin):
                 if not obj:
                     raise RuntimeError()
 
-                updated_object = self.put_object_data(obj, item)
+                updated_object = self._put_object_data(obj, item)
 
                 if updated_object:
                     updated_objects.append(updated_object)
