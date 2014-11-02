@@ -1,3 +1,6 @@
+from shanghai.exceptions import RelationshipDoesNotExist
+
+
 class MetaMixin(object):
 
     def get_id(self):
@@ -17,4 +20,9 @@ class MetaMixin(object):
     def relationship_for(self, name):
         relationships = self.get_relationships()
 
-        return relationships.get(name)
+        relationship = relationships.get(name, None)
+
+        if not relationship:
+            raise RelationshipDoesNotExist(self.name, name)
+
+        return relationship
