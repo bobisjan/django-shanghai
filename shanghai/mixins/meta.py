@@ -23,6 +23,6 @@ class MetaMixin(object):
         relationship = relationships.get(name, None)
 
         if not relationship:
-            raise RelationshipDoesNotExist(self.name, name)
+            raise RelationshipDoesNotExist(self, name)
 
         return relationship

@@ -101,6 +101,9 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
     def urls(self):
         return self.generate_urls()
 
+    def __str__(self):
+        return self.name
+
 
 class ModelResource(ModelCollectionMixin, ModelObjectMixin, ModelObjectsMixin,
                     ModelLinkedMixin, ModelLinkedObjectMixin, ModelLinkedObjectsMixin,

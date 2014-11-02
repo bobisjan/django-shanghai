@@ -1,7 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http import HttpResponseNotFound
 
-from shanghai.http import JsonApiResponse
+from shanghai.exceptions import LinkedResourceAlreadyExists
+from shanghai.http import HttpResponseConflict, JsonApiResponse
 from shanghai.utils import is_iterable
 
 
@@ -46,6 +47,9 @@ class ResponderMixin(object):
 
         if isinstance(error, ObjectDoesNotExist):
             return HttpResponseNotFound()
+
+        if isinstance(error, LinkedResourceAlreadyExists):
+            return HttpResponseConflict()
 
         if isinstance(error, ValidationError):
             validation_errors = self.from_validation_error(error, **kwargs)

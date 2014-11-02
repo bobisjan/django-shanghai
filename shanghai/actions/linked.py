@@ -1,5 +1,6 @@
 from django.http import HttpResponseNotFound
 
+from shanghai.exceptions import LinkedResourceAlreadyExists
 from shanghai.http import HttpResponseNoContent
 
 
@@ -88,7 +89,7 @@ class ModelLinkedMixin(LinkedMixin):
         if relationship.is_belongs_to():
             link = self.get_linked_data()
             if link:
-                raise RuntimeError()
+                raise LinkedResourceAlreadyExists(self, obj, relationship, link)
 
             linked_pk = self.get_linked_input_data()
             linked_resource = self.get_linked_resource()
@@ -98,6 +99,10 @@ class ModelLinkedMixin(LinkedMixin):
             obj.save()
         elif relationship.is_has_many():
             related_manager = relationship.get_from(obj)
+
+            if related_manager.count():
+                raise LinkedResourceAlreadyExists(self, obj, relationship, related_manager.all())
+
             linked_pk = self.get_linked_input_data()
             linked_resource = self.get_linked_resource()
 
