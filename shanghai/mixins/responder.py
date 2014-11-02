@@ -1,3 +1,5 @@
+from django.core.exceptions import ValidationError
+
 from shanghai.http import JsonApiResponse
 from shanghai.utils import is_iterable
 
@@ -35,3 +37,36 @@ class ResponderMixin(object):
         response['Location'] = location
 
         return response
+
+    def response_with_error(self, error, **kwargs):
+        kwargs.setdefault('status', 400)
+
+        errors = list()
+
+        if isinstance(error, ValidationError):
+            validation_errors = self.from_validation_error(error, **kwargs)
+            errors.extend(validation_errors)
+
+        return JsonApiResponse(dict(errors=errors), **kwargs)
+
+    def from_validation_error(self, error, **kwargs):
+        errors = list()
+
+        if hasattr(error, 'error_dict'):
+            for key, error_list in error.message_dict.items():
+                for _error in error_list:
+                    errors.append(self.error_dict(key, kwargs['status'], _error))
+
+        return errors
+
+    @staticmethod
+    def error_dict(id, status, title, **kwargs):
+        error = dict(
+            id=id,
+            status=status,
+            title=title
+        )
+
+        error.update(**kwargs)
+
+        return error
