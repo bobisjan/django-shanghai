@@ -1,5 +1,4 @@
-from django.db import models, transaction
-from django.http import HttpResponseNotFound
+from django.db import transaction
 
 from shanghai.http import HttpResponseNoContent
 
@@ -15,17 +14,11 @@ class ObjectMixin(object):
     def get_object(self):
         data = self.get_object_data()
 
-        if not data:
-            return HttpResponseNotFound()
-
         return self.response(data)
 
     def put_object(self):
         obj = self.get_object_data()
         data = self.get_object_input_data()
-
-        if not obj:
-            return HttpResponseNotFound()
 
         updated_object = self.put_object_data(obj, data)
 
@@ -39,9 +32,6 @@ class ObjectMixin(object):
 
     def delete_object(self):
         data = self.get_object_data()
-
-        if not data:
-            return HttpResponseNotFound()
 
         self.delete_object_data(data)
 
@@ -59,12 +49,7 @@ class ModelObjectMixin(ObjectMixin):
         if not pk:
             pk = self.pk
 
-        try:
-            obj = qs.get(pk=pk)
-        except models.ObjectDoesNotExist:
-            return None
-        else:
-            return obj
+        return qs.get(pk=pk)
 
     def _put_object_data(self, obj, data):
         update_fields = list()

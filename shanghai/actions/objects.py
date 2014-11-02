@@ -60,9 +60,6 @@ class ModelObjectsMixin(ObjectsMixin):
 
                 obj = self.get_object_data(pk)
 
-                if not obj:
-                    raise RuntimeError()
-
                 updated_object = self._put_object_data(obj, item)
 
                 if updated_object:
