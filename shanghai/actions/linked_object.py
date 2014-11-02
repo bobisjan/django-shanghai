@@ -16,7 +16,7 @@ class LinkedObjectMixin(object):
         data = relationship.get_from(obj)
         linked_object = self.get_linked_object_data()
 
-        if not obj or not relationship.is_has_many():
+        if not relationship.is_has_many():
             return HttpResponseNotFound()
 
         self.delete_linked_object_data(data, linked_object)

@@ -1,3 +1,5 @@
+import sys
+
 from django.conf import settings
 from django.http import HttpResponseServerError
 
@@ -76,4 +78,15 @@ class DispatcherMixin(object):
         setattr(self, 'input', input)
 
         callback = getattr(self, '_'.join(action), self.action_not_implemented)
-        return callback()
+
+        try:
+            response = callback()
+        except:
+            exc_info = sys.exc_info()
+
+            if settings.DEBUG:
+                raise
+
+            return self.response_with_error(exc_info[1])
+        else:
+            return response

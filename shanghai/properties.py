@@ -12,6 +12,9 @@ class Property(object):
     def set_to(self, obj, value):
         setattr(obj, self.name, value)
 
+    def __str__(self):
+        return self.name
+
 
 class Id(Property):
     """

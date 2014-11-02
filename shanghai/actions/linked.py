@@ -1,6 +1,6 @@
-from django.http import HttpResponseNotFound, HttpResponseBadRequest
-from django.db import models
+from django.http import HttpResponseNotFound
 
+from shanghai.exceptions import LinkedResourceAlreadyExists
 from shanghai.http import HttpResponseNoContent
 
 
@@ -29,10 +29,6 @@ class LinkedMixin(object):
 
     def get_linked(self):
         data = self.get_linked_data()
-
-        if not data:
-            return HttpResponseNotFound()
-
         serializer = self.get_linked_serializer()
 
         return self.response(data, serializer=serializer)
@@ -40,9 +36,6 @@ class LinkedMixin(object):
     def post_linked(self):
         obj = self.get_object_data()
         relationship = self.get_linked_relationship()
-
-        if not obj:
-            return HttpResponseNotFound()
 
         self.post_linked_data(obj, relationship)
 
@@ -57,9 +50,6 @@ class LinkedMixin(object):
         linked_resource = self.get_linked_resource()
         linked_pk = self.get_linked_input_data()
 
-        if not obj:
-            return HttpResponseNotFound()
-
         self.put_linked_data(obj, relationship, linked_resource, linked_pk)
 
         return HttpResponseNoContent()
@@ -71,7 +61,7 @@ class LinkedMixin(object):
         obj = self.get_object_data()
         relationship = self.get_linked_relationship()
 
-        if not obj or not relationship.is_belongs_to():
+        if not relationship.is_belongs_to():
             return HttpResponseNotFound()
 
         self.delete_linked_data(obj, relationship)
@@ -85,22 +75,21 @@ class LinkedMixin(object):
 class ModelLinkedMixin(LinkedMixin):
 
     def get_linked_data(self):
-        qs = self.get_queryset()
+        obj = self.get_object_data()
+        relationship = self.get_linked_relationship()
 
-        try:
-            obj = qs.get(pk=self.pk)
-        except models.ObjectDoesNotExist:
-            return None
-        else:
-            relationship = self.get_linked_relationship()
-
+        if relationship.is_belongs_to():
             return relationship.get_from(obj)
+        elif relationship.is_has_many():
+            related_manager = relationship.get_from(obj)
+
+            return related_manager.all()
 
     def post_linked_data(self, obj, relationship):
         if relationship.is_belongs_to():
             link = self.get_linked_data()
             if link:
-                raise RuntimeError()
+                raise LinkedResourceAlreadyExists(self, obj, relationship, link)
 
             linked_pk = self.get_linked_input_data()
             linked_resource = self.get_linked_resource()
@@ -110,6 +99,10 @@ class ModelLinkedMixin(LinkedMixin):
             obj.save()
         elif relationship.is_has_many():
             related_manager = relationship.get_from(obj)
+
+            if related_manager.count():
+                raise LinkedResourceAlreadyExists(self, obj, relationship, related_manager.all())
+
             linked_pk = self.get_linked_input_data()
             linked_resource = self.get_linked_resource()
 
@@ -125,9 +118,6 @@ class ModelLinkedMixin(LinkedMixin):
 
             if linked_pk:
                 linked_obj = linked_resource.get_object_data(linked_pk)
-
-                if not linked_obj:
-                    raise RuntimeError()
 
             relationship.set_to(obj, linked_obj)
             obj.save(update_fields=[relationship.name])

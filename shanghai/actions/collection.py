@@ -61,9 +61,6 @@ class ModelCollectionMixin(CollectionMixin):
                 if linked_pk:
                     linked_obj = linked_resource.get_object_data(linked_pk)
 
-                    if not linked_obj:
-                        raise RuntimeError()
-
                 relationship.set_to(obj, linked_obj)
 
         obj.full_clean()
