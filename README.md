@@ -7,7 +7,6 @@ A Django app to provide [JSON API](http://jsonapi.org) resources.
 Jan Bobisud
 
 - http://github.com/bobisjan
-- me@bobisjan.com
 
 ## License
 
