@@ -17,4 +17,5 @@ setup(
     url='https://github.com/bobisjan/django-shanghai',
     author='Jan Bobisud',
     author_email='me@bobisjan.com',
+    test_suite='tests.runner.run_tests'
 )

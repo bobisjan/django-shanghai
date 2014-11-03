@@ -1,4 +1,4 @@
-from unittest import TestCase
+from django.test import TestCase
 
 from shanghai.utils import is_iterable
 
