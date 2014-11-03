@@ -19,11 +19,11 @@ from django.conf import settings
 
 def run_tests():
     runner_class = get_runner(settings)
-    test_runner = runner_class(top_level='tests', pattern='*.py', verbosity=1, interactive=True)
+    test_runner = runner_class(pattern='*.py', verbosity=1, interactive=True)
 
     django.setup()
 
-    failures = test_runner.run_tests(['unit'])
+    failures = test_runner.run_tests(['unit', 'integration'])
 
     sys.exit(bool(failures))
 
