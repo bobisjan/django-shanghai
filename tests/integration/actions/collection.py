@@ -8,7 +8,7 @@ class GetCollectionTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        articles = response.document.get('articles', None)
+        articles = response.document.get('articles')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
@@ -24,7 +24,7 @@ class GetEmptyCollectionTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        articles = response.document.get('articles', None)
+        articles = response.document.get('articles')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
@@ -52,7 +52,7 @@ class PostCollectionTestCase(TestCase):
 
         self.assertEquals(response.status_code, 200)
 
-        articles = response.document.get('articles', None)
+        articles = response.document.get('articles')
         self.assertIsNotNone(articles)
 
     def test_app_should_create_articles(self):

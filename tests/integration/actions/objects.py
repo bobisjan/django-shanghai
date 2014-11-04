@@ -8,7 +8,7 @@ class GetObjectsTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        articles = response.document.get('articles', None)
+        articles = response.document.get('articles')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)

@@ -16,7 +16,7 @@ class GetLinkedBelongsToTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        categories = response.document.get('categories', None)
+        categories = response.document.get('categories')
 
         self.assertIsNotNone(categories)
         self.assertIsInstance(categories, dict)
@@ -26,7 +26,7 @@ class GetLinkedBelongsToTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        categories = response.document.get('categories', None)
+        categories = response.document.get('categories')
 
         self.assertIsNone(categories)
 
@@ -38,7 +38,7 @@ class GetLinkedHasManyTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        articles = response.document.get('articles', None)
+        articles = response.document.get('articles')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
@@ -124,8 +124,7 @@ class PutLinkedTestCase(TestCase):
         self.assertEqual(response.document.get('articles').get('links').get('category'), '2')
 
         response = self.client.get('/api/articles/1/links/category')
-        categories = response.document.get('categories')
-        self.assertIsNotNone(categories)
+        self.assertIsNotNone(response.document.get('categories'))
 
     def test_app_should_post_articles_on_category(self):
         data = {
@@ -157,17 +156,13 @@ class DeleteLinkedBelongsToTestCase(TestCase):
 
     def test_app_should_delete_category_on_article(self):
         response = self.client.delete('/api/articles/1/links/category')
-
         self.assertEqual(response.status_code, 204)
 
         response = self.client.get('/api/articles/1/links/category')
-        categories = response.document.get('categories', None)
-        self.assertIsNone(categories)
+        self.assertIsNone(response.document.get('categories'))
 
         response = self.client.get('/api/articles/1')
-        articles = response.document.get('articles', None)
-
-        self.assertIsNone(articles.get('links').get('categories'))
+        self.assertIsNone(response.document.get('articles').get('links').get('categories'))
 
 
 class DeleteHasManyTestCase(TestCase):
