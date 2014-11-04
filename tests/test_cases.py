@@ -2,6 +2,7 @@ import json
 
 from django import test
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 
 import shanghai
 
@@ -16,6 +17,17 @@ class Client(test.Client):
             setattr(response, 'document', document)
 
         return response
+
+    def post(self, path, data=None, follow=False, secure=False, **extra):
+        if data:
+            data = json.dumps(data, cls=DjangoJSONEncoder)
+
+        return super(Client, self).post(path,
+                                        data=data,
+                                        content_type=shanghai.CONTENT_TYPE,
+                                        follow=follow,
+                                        secure=secure,
+                                        **extra)
 
 
 class TestCase(test.TestCase):
