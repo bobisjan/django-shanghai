@@ -18,6 +18,8 @@ from django.conf import settings
 
 
 def run_tests():
+    settings.FIXTURE_DIRS = (os.path.join(TESTS_DIR, 'fixtures'),)
+
     runner_class = get_runner(settings)
     test_runner = runner_class(pattern='*.py', verbosity=1, interactive=True)
 
