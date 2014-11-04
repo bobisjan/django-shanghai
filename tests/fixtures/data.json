@@ -36,10 +36,26 @@
         }
     },
     {
+        "pk": 5,
+        "model": "blog.article",
+        "fields": {
+            "category": null,
+            "perex": "Lorem ipsum",
+            "title": "Fifth article"
+        }
+    },
+    {
         "pk": 1,
         "model": "blog.category",
         "fields": {
             "name": "World"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "blog.category",
+        "fields": {
+            "name": "Home"
         }
     }
 ]
