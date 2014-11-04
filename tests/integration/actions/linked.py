@@ -108,6 +108,51 @@ class PostLinkedTestCase(TestCase):
         self.assertEquals(response.status_code, 409)
 
 
+class PutLinkedTestCase(TestCase):
+
+    def test_app_should_put_category_on_article(self):
+        data = {
+            'categories': '2'
+        }
+
+        response = self.client.put('/api/articles/1/links/category', data)
+
+        self.assertEquals(response.status_code, 204)
+
+        response = self.client.get('/api/articles/1')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.document.get('articles').get('links').get('category'), '2')
+
+        response = self.client.get('/api/articles/1/links/category')
+        categories = response.document.get('categories')
+        self.assertIsNotNone(categories)
+
+    def test_app_should_post_articles_on_category(self):
+        data = {
+            'articles': ['1', '4']
+        }
+
+        response = self.client.post('/api/categories/2/links/articles', data)
+
+        self.assertEquals(response.status_code, 204)
+
+        response = self.client.get('/api/articles/1')
+        category = response.document.get('articles').get('links').get('category')
+
+        self.assertEqual(category, '2')
+
+        response = self.client.get('/api/articles/4')
+        category = response.document.get('articles').get('links').get('category')
+
+        self.assertEqual(category, '2')
+
+        response = self.client.get('/api/categories/2/links/articles')
+        articles = response.document.get('articles')
+
+        self.assertIsNotNone(articles)
+        self.assertEqual(len(articles), 2)
+
+
 class DeleteLinkedBelongsToTestCase(TestCase):
 
     def test_app_should_delete_category_on_article(self):
