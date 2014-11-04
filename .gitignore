@@ -37,7 +37,7 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
+# Django stuff
 *.log
 
 # Sphinx documentation
@@ -45,3 +45,7 @@ docs/_build/
 
 # PyCharm stuff
 .idea/
+
+# pyvenv
+bin/
+*.cfg
