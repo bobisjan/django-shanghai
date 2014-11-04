@@ -1,5 +1,6 @@
 from django.db import transaction
 
+from shanghai.exceptions import ObjectsDoesNotExist
 from shanghai.http import HttpResponseNoContent
 
 
@@ -48,7 +49,12 @@ class ModelObjectsMixin(ObjectsMixin):
         if not pk:
             pk = self.pk
 
-        return qs.filter(pk__in=pk)
+        objects = qs.filter(pk__in=pk)
+
+        if len(pk) != len(objects):
+            raise ObjectsDoesNotExist()
+
+        return objects
 
     def put_objects_data(self, data):
         updated_objects = list()

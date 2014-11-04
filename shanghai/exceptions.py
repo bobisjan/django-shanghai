@@ -1,6 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
 
 
+class ObjectsDoesNotExist(ObjectDoesNotExist):
+    pass
+
+
 class RelationshipDoesNotExist(ObjectDoesNotExist):
 
     def __init__(self, resource, relationship):
