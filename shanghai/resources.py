@@ -94,8 +94,9 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
             reverse_args.append(link_pk)
 
         name = self.url_pattern_name(*pattern_args)
+        url = reverse(name, args=reverse_args)
 
-        return reverse(name, args=reverse_args)
+        return url.replace('%2C', ',')
 
     @property
     def urls(self):

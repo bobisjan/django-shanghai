@@ -13,12 +13,7 @@ class Serializer(object):
         document = dict()
 
         key = self.key_for_type(self.resource.name)
-        data = None
-
-        if object_or_iterable:
-            data = self.serialize_object_or_iterable(object_or_iterable)
-
-        document[key] = data
+        document[key] = self.serialize_object_or_iterable(object_or_iterable)
 
         return document
 

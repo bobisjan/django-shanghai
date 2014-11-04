@@ -3,6 +3,9 @@ from django.utils.module_loading import autodiscover_modules
 from shanghai.apps import Shanghai
 
 
+CONTENT_TYPE = 'application/vnd.api+json'
+
+
 def autodiscover():
     """
     Automatically discovers `resources` modules in `INSTALLED_APPS`.

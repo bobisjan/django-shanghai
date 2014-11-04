@@ -1,4 +1,4 @@
-from unittest import TestCase
+from django.test import TestCase
 
 from shanghai.apps import Shanghai
 from shanghai.serializers import Serializer
