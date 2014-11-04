@@ -24,6 +24,24 @@ class GetEmptyObjectTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class PutObjectTestCase(TestCase):
+
+    def test_app_should_put_article(self):
+        data = {
+            'articles': {
+                'title': 'Updated title'
+            }
+        }
+
+        response = self.client.put('/api/articles/1', data)
+
+        self.assertEqual(response.status_code, 204)
+
+        response = self.client.get('/api/articles/1')
+
+        self.assertEqual(response.document.get('articles').get('title'), 'Updated title')
+
+
 class DeleteObjectTestCase(TestCase):
 
     def test_app_should_delete_article(self):
