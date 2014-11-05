@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.test.utils import override_settings
 
 import shanghai
 from shanghai.resources import ModelResource
@@ -18,3 +19,19 @@ class AutodiscoverTestCase(TestCase):
 
         self.assertTrue(isinstance(articles, ModelResource))
         self.assertTrue(isinstance(categories, ModelResource))
+
+
+class AuthResourcesTestCase(TestCase):
+
+    def test_app_should_have_auth_resources_by_default(self):
+        self.assertIsNotNone(shanghai.api.resource_for('groups'))
+        self.assertIsNotNone(shanghai.api.resource_for('users'))
+
+    @override_settings(SHANGHAI_AUTH_RESOURCES=False)
+    def test_app_should_not_have_auth_resources(self):
+        api = shanghai.Shanghai()
+
+        shanghai.discover(api)
+
+        self.assertIsNone(api.resource_for('groups'))
+        self.assertIsNone(api.resource_for('users'))

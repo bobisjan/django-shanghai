@@ -133,9 +133,11 @@ class ModelInspector(Inspector):
     @staticmethod
     def belongs_to(field_name, field):
         resource = resource_for_model(field.rel.to)
-        inverse = field.rel.related_name
 
-        return BelongsTo(target=resource.name, inverse=inverse, name=field_name)
+        if resource:
+            inverse = field.rel.related_name
+
+            return BelongsTo(target=resource.name, inverse=inverse, name=field_name)
 
     def inspect_id(self):
         _id = None
@@ -198,6 +200,10 @@ class ModelInspector(Inspector):
             return
 
         resource = resource_for_model(field.rel.to)
+
+        if not resource:
+            return
+
         relationships = getattr(self.resource, 'relationships', dict())
 
         relationship = HasMany(target=resource.name, inverse=field.rel.related_name, name=field_name)
