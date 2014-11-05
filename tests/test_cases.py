@@ -1,10 +1,10 @@
 import json
 
-from django import test
-from django.conf import settings
+from django import conf, test
 from django.core.serializers.json import DjangoJSONEncoder
 
 import shanghai
+from shanghai.conf import settings
 
 
 class Client(test.Client):
@@ -13,7 +13,7 @@ class Client(test.Client):
         response = super(Client, self).request(**request)
 
         if response.content:
-            document = json.loads(response.content.decode(settings.DEFAULT_CHARSET))
+            document = json.loads(response.content.decode(conf.settings.DEFAULT_CHARSET))
             setattr(response, 'document', document)
 
         return response
@@ -24,7 +24,7 @@ class Client(test.Client):
 
         return super(Client, self).post(path,
                                         data=data,
-                                        content_type=shanghai.CONTENT_TYPE,
+                                        content_type=settings.CONTENT_TYPE,
                                         follow=follow,
                                         secure=secure,
                                         **extra)
@@ -35,7 +35,7 @@ class Client(test.Client):
 
         return super(Client, self).put(path,
                                        data=data,
-                                       content_type=shanghai.CONTENT_TYPE,
+                                       content_type=settings.CONTENT_TYPE,
                                        follow=follow,
                                        secure=secure,
                                        **extra)

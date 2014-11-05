@@ -4,9 +4,6 @@ from shanghai.conf import settings
 from shanghai.apps import Shanghai
 
 
-CONTENT_TYPE = 'application/vnd.api+json'
-
-
 def autodiscover():
     """
     Automatically discovers `resources` modules in `INSTALLED_APPS`.
