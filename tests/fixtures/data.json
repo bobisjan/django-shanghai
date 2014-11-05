@@ -5,7 +5,8 @@
         "fields": {
             "category": 1,
             "perex": "Lorem ipsum",
-            "title": "First article"
+            "title": "First article",
+            "tags": [1, 2]
         }
     },
     {
@@ -14,7 +15,8 @@
         "fields": {
             "category": 1,
             "perex": "Lorem ipsum",
-            "title": "Second article"
+            "title": "Second article",
+            "tags": [1, 2]
         }
     },
     {
@@ -23,7 +25,8 @@
         "fields": {
             "category": 1,
             "perex": "Lorem ipsum",
-            "title": "Third article"
+            "title": "Third article",
+            "tags": [1, 2]
         }
     },
     {
@@ -32,7 +35,8 @@
         "fields": {
             "category": null,
             "perex": "Lorem ipsum",
-            "title": "Fourth article"
+            "title": "Fourth article",
+            "tags": [1, 2]
         }
     },
     {
@@ -41,7 +45,8 @@
         "fields": {
             "category": null,
             "perex": "Lorem ipsum",
-            "title": "Fifth article"
+            "title": "Fifth article",
+            "tags": [1, 2]
         }
     },
     {
@@ -56,6 +61,20 @@
         "model": "blog.category",
         "fields": {
             "name": "Home"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "blog.tag",
+        "fields": {
+            "name": "aaa"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "blog.tag",
+        "fields": {
+            "name": "bbb"
         }
     }
 ]
