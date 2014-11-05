@@ -102,6 +102,12 @@ class ModelInspector(Inspector):
             if field.name is field_name:
                 return field
 
+        many_to_many = getattr(meta, 'many_to_many', dict())
+
+        for field in many_to_many:
+            if field_name == field.name:
+                return field
+
     @staticmethod
     def is_attribute(field_name, field):
         types = models.BigIntegerField, models.BooleanField, models.CharField, models.CommaSeparatedIntegerField, \
@@ -119,6 +125,10 @@ class ModelInspector(Inspector):
     @staticmethod
     def is_belongs_to(field_name, field):
         return issubclass(type(field), models.ForeignKey)
+
+    @staticmethod
+    def is_has_many(field_name, field):
+        return issubclass(type(field), models.ManyToManyField)
 
     @staticmethod
     def belongs_to(field_name, field):
@@ -169,6 +179,8 @@ class ModelInspector(Inspector):
 
             if self.is_belongs_to(field_name, field):
                 self.add_has_many_from_belongs_to(field_name, field)
+            elif self.is_has_many(field_name, field):
+                self.add_has_many_from_many_to_many(field_name, field)
 
     def add_has_many_from_belongs_to(self, field_name, field):
         resource = resource_for_model(field.rel.to)
@@ -176,6 +188,28 @@ class ModelInspector(Inspector):
         name = field.rel.related_name
 
         relationship = HasMany(target=self.resource.name, inverse=field_name, name=name)
+
+        relationships[relationship.name] = relationship
+        setattr(resource, 'relationships', relationships)
+
+    def add_has_many_from_many_to_many(self, field_name, field):
+        # skip when a resource for `through` model is registered
+        if resource_for_model(field.rel.through):
+            return
+
+        resource = resource_for_model(field.rel.to)
+        relationships = getattr(self.resource, 'relationships', dict())
+
+        relationship = HasMany(target=resource.name, inverse=field.rel.related_name, name=field_name)
+
+        relationships[relationship.name] = relationship
+        setattr(self, 'relationships', relationships)
+
+        # add `has_many` on the inverse resource
+
+        relationships = getattr(resource, 'relationships', dict())
+
+        relationship = HasMany(target=self.resource.name, inverse=field_name, name=field.rel.related_name)
 
         relationships[relationship.name] = relationship
         setattr(resource, 'relationships', relationships)

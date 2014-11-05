@@ -24,11 +24,8 @@ def is_iterable(object_or_iterable):
 def resource_for_model(model, api=shanghai.api):
     resources = getattr(api, '_registry')
 
-    for name in resources.keys():
-        resource = resources.get(name)
+    for resource in resources.values():
+        current = getattr(resource, 'model', None)
 
-        if hasattr(resource, 'model'):
-            current = getattr(resource, 'model')
-
-            if model is current:
-                return resource
+        if model is current:
+            return resource
