@@ -52,19 +52,11 @@ class ModelObjectMixin(ObjectMixin):
         return qs.get(pk=pk)
 
     def _put_object_data(self, obj, data):
+        pk, attributes, links = self.serializer.unpack(data)
         update_fields = list()
-        links = dict()
-        _id = self.get_id()
-
-        if _id.name in data:
-            del data[_id.name]
-
-        if 'links' in data:
-            links = data.get('links')
-            del data['links']
 
         # update attributes
-        for key in data.keys():
+        for key in attributes.keys():
             update_fields.append(key)
             setattr(obj, key, data.get(key))
 

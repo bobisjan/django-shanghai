@@ -61,8 +61,7 @@ class ModelObjectsMixin(ObjectsMixin):
 
         with transaction.atomic():
             for item in data:
-                _id = self.get_id()
-                pk = item.get(_id.name)
+                pk = self.serializer.unpack_id(item)
 
                 obj = self.get_object_data(pk)
 

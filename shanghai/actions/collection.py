@@ -42,13 +42,9 @@ class ModelCollectionMixin(CollectionMixin):
         return self.get_queryset()
 
     def _post_collection_object(self, data):
-        links = dict()
+        pk, attributes, links = self.serializer.unpack(data)
 
-        if 'links' in data:
-            links = data.get('links')
-            del data['links']
-
-        obj = self.model(**data)
+        obj = self.model(**attributes)
 
         for key in links.keys():
             relationship = self.relationship_for(key)
