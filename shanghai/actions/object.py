@@ -52,27 +52,18 @@ class ModelObjectMixin(ObjectMixin):
         return qs.get(pk=pk)
 
     def _put_object_data(self, obj, data):
+        pk, attributes, links = self.serializer.unpack(data)
         update_fields = list()
-        links = dict()
-        _id = self.get_id()
-
-        if _id.name in data:
-            del data[_id.name]
-
-        if 'links' in data:
-            links = data.get('links')
-            del data['links']
 
         # update attributes
-        for key in data.keys():
+        for key, value in attributes.items():
             update_fields.append(key)
-            setattr(obj, key, data.get(key))
+            setattr(obj, key, value)
 
         # update `belongs to` relationships
-        for key in links.keys():
+        for key, linked_pk in links.items():
             relationship = self.relationship_for(key)
             linked_resource = self.get_linked_resource(relationship)
-            linked_pk = links.get(key)
 
             if relationship.is_belongs_to():
                 linked_obj = None
@@ -90,10 +81,9 @@ class ModelObjectMixin(ObjectMixin):
         obj.save(update_fields=update_fields)
 
         # update `has many` relationships
-        for key in links.keys():
+        for key, linked_pk in links.items():
             relationship = self.relationship_for(key)
             linked_resource = self.get_linked_resource(relationship)
-            linked_pk = links.get(key)
 
             if relationship.is_has_many():
                 linked_objects = list()

@@ -17,8 +17,8 @@ class AutodiscoverTestCase(TestCase):
         self.assertIsNotNone(articles)
         self.assertIsNotNone(categories)
 
-        self.assertTrue(isinstance(articles, ModelResource))
-        self.assertTrue(isinstance(categories, ModelResource))
+        self.assertIsInstance(articles, ModelResource)
+        self.assertIsInstance(categories, ModelResource)
 
 
 class AuthResourcesTestCase(TestCase):

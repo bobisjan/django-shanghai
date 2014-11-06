@@ -194,3 +194,27 @@ class Serializer(object):
         value = data.get(key)
 
         obj[relationship.name] = value
+
+    def unpack(self, data):
+        pk = self.unpack_id(data)
+        links = dict()
+
+        if 'links' in data:
+            links = data.get('links')
+            del data['links']
+
+        attributes = data
+
+        return pk, attributes, links
+
+    def unpack_id(self, data):
+        id = self.resource.get_id()
+        key = self.key_for_id(id)
+
+        pk = None
+
+        if key in data:
+            pk = data[key]
+            del data[key]
+
+        return pk

@@ -6,6 +6,7 @@ from django import conf
 
 
 _default_settings = {
+    'CONTENT_TYPE': 'application/vnd.api+json',
     'AUTH_RESOURCES': True
 }
 
