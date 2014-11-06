@@ -56,15 +56,14 @@ class ModelObjectMixin(ObjectMixin):
         update_fields = list()
 
         # update attributes
-        for key in attributes.keys():
+        for key, value in attributes.items():
             update_fields.append(key)
-            setattr(obj, key, data.get(key))
+            setattr(obj, key, value)
 
         # update `belongs to` relationships
-        for key in links.keys():
+        for key, linked_pk in links.items():
             relationship = self.relationship_for(key)
             linked_resource = self.get_linked_resource(relationship)
-            linked_pk = links.get(key)
 
             if relationship.is_belongs_to():
                 linked_obj = None
@@ -82,10 +81,9 @@ class ModelObjectMixin(ObjectMixin):
         obj.save(update_fields=update_fields)
 
         # update `has many` relationships
-        for key in links.keys():
+        for key, linked_pk in links.items():
             relationship = self.relationship_for(key)
             linked_resource = self.get_linked_resource(relationship)
-            linked_pk = links.get(key)
 
             if relationship.is_has_many():
                 linked_objects = list()
