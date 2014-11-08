@@ -38,7 +38,7 @@ class MetaInspector(Inspector):
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
-            if issubclass(type(value), Id):
+            if isinstance(value, Id):
                 _id = value
 
         if not _id:
@@ -51,9 +51,11 @@ class MetaInspector(Inspector):
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
-            if issubclass(type(value), Attribute):
+            if isinstance(value, Attribute):
                 if not value.name:
                     value.name = name
+                if not value.attr_name:
+                    value.attr_name = name
                 attributes[value.name] = value
 
     def inspect_belongs_to(self):
@@ -61,9 +63,11 @@ class MetaInspector(Inspector):
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
-            if issubclass(type(value), BelongsTo):
+            if isinstance(value, BelongsTo):
                 if not value.name:
                     value.name = name
+                if not value.attr_name:
+                    value.attr_name = name
                 relationships[value.name] = value
 
     def inspect_has_many(self):
@@ -71,9 +75,11 @@ class MetaInspector(Inspector):
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
-            if issubclass(type(value), HasMany):
+            if isinstance(value, HasMany):
                 if not value.name:
                     value.name = name
+                if not value.attr_name:
+                    value.attr_name = name
                 relationships[value.name] = value
 
 
@@ -143,11 +149,15 @@ class ModelInspector(Inspector):
 
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
+            attr_name = None
 
             primary_key = getattr(field, 'primary_key', False)
 
+            if primary_key and self.is_one_to_one_field(field_name, field):
+                attr_name = field_name + '_id'
+
             if primary_key:
-                _id = Id(field_name)
+                _id = Id(attr_name=attr_name)
                 break
 
         setattr(self.resource, 'id', _id)

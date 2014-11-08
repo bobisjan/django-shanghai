@@ -35,3 +35,10 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ExtendedTag(models.Model):
+
+    tag = models.OneToOneField(Tag, related_name="extended_tag", primary_key=True)
+
+    is_extended = models.BooleanField(default=True, blank=True)

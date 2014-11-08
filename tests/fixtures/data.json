@@ -107,5 +107,12 @@
         "fields": {
             "name": "bbb"
         }
+    },
+    {
+        "pk": 1,
+        "fields": {
+            "is_extended": true
+        },
+        "model": "blog.extendedtag"
     }
 ]
