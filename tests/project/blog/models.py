@@ -14,6 +14,13 @@ class Article(models.Model):
         return self.title
 
 
+class ExtendedArticle(models.Model):
+
+    article = models.OneToOneField(Article, related_name="extended_article", null=True, blank=True)
+
+    is_extended = models.BooleanField(default=True, blank=True)
+
+
 class Category(models.Model):
 
     name = models.CharField(max_length=32)

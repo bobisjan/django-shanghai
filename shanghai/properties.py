@@ -7,7 +7,7 @@ class Property(object):
         self.name = name
 
     def get_from(self, obj):
-        return getattr(obj, self.name)
+        return getattr(obj, self.name, None)
 
     def set_to(self, obj, value):
         setattr(obj, self.name, value)

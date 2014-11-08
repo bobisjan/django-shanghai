@@ -1,7 +1,7 @@
 from shanghai import api
 from shanghai.resources import ModelResource
 
-from .models import Article, Category, Tag
+from .models import Article, Category, ExtendedArticle, Tag
 
 
 class ArticleResource(ModelResource):
@@ -16,6 +16,12 @@ class CategoryResource(ModelResource):
     model = Category
 
 
+class ExtendedArticleResource(ModelResource):
+
+    name = 'extended_articles'
+    model = ExtendedArticle
+
+
 class TagResource(ModelResource):
 
     name = "tags"
@@ -24,4 +30,5 @@ class TagResource(ModelResource):
 
 api.register(ArticleResource)
 api.register(CategoryResource)
+api.register(ExtendedArticleResource)
 api.register(TagResource)

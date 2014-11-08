@@ -104,26 +104,30 @@ class ModelInspector(Inspector):
                 return field
 
     @staticmethod
-    def is_attribute(field_name, field):
+    def is_attribute_field(field_name, field):
         types = models.BigIntegerField, models.BooleanField, models.CharField, models.CommaSeparatedIntegerField, \
                 models.DateField, models.DateTimeField, models.DecimalField, models.EmailField, models.FloatField, \
                 models.IntegerField, models.GenericIPAddressField, models.NullBooleanField, \
                 models.PositiveIntegerField, models.PositiveSmallIntegerField, models.SlugField, \
                 models.SmallIntegerField, models.TextField, models.TimeField, models.URLField,
 
-        return issubclass(type(field), types)
+        return isinstance(field, types)
 
     @staticmethod
     def attribute(field_name, field):
         return Attribute(name=field_name)
 
     @staticmethod
-    def is_belongs_to(field_name, field):
-        return issubclass(type(field), models.ForeignKey)
+    def is_foreign_key_field(field_name, field):
+        return isinstance(field, models.ForeignKey)
 
     @staticmethod
-    def is_has_many(field_name, field):
-        return issubclass(type(field), models.ManyToManyField)
+    def is_one_to_one_field(field_name, field):
+        return isinstance(field, models.OneToOneField)
+
+    @staticmethod
+    def is_many_to_many_field(field_name, field):
+        return isinstance(field, models.ManyToManyField)
 
     @staticmethod
     def belongs_to(field_name, field):
@@ -141,9 +145,11 @@ class ModelInspector(Inspector):
             field = self.get_model_field(field_name)
 
             primary_key = getattr(field, 'primary_key', False)
+
             if primary_key:
                 _id = Id(field_name)
                 break
+
         setattr(self.resource, 'id', _id)
 
     def inspect_attributes(self):
@@ -152,7 +158,7 @@ class ModelInspector(Inspector):
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
 
-            if self.is_attribute(field_name, field):
+            if self.is_attribute_field(field_name, field):
                 attribute = self.attribute(field_name, field)
                 if attribute:
                     attributes[attribute.name] = attribute
@@ -163,8 +169,12 @@ class ModelInspector(Inspector):
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
 
-            if self.is_belongs_to(field_name, field):
+            if self.is_one_to_one_field(field_name, field):
+                self.add_belongs_to_from_one_to_one_field(field_name, field)
+
+            elif self.is_foreign_key_field(field_name, field):
                 relationship = self.belongs_to(field_name, field)
+
                 if relationship:
                     relationships[relationship.name] = relationship
 
@@ -172,10 +182,28 @@ class ModelInspector(Inspector):
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
 
-            if self.is_belongs_to(field_name, field):
+            if self.is_one_to_one_field(field_name, field):
+                continue
+
+            if self.is_foreign_key_field(field_name, field):
                 self.add_has_many_from_belongs_to(field_name, field)
-            elif self.is_has_many(field_name, field):
+            elif self.is_many_to_many_field(field_name, field):
                 self.add_has_many_from_many_to_many(field_name, field)
+
+    def add_belongs_to_from_one_to_one_field(self, field_name, field):
+        resource = resource_for_model(field.rel.to)
+
+        if resource:
+            relationships = getattr(self.resource, 'relationships')
+            inverse = field.rel.related_name
+
+            relationship = BelongsTo(target=resource.name, inverse=inverse, name=field_name)
+            relationships[relationship.name] = relationship
+
+            inverse_relationships = getattr(resource, 'relationships')
+
+            inverse_relationship = BelongsTo(target=self.resource.name, inverse=field_name, name=inverse)
+            inverse_relationships[inverse_relationship.name] = inverse_relationship
 
     def add_has_many_from_belongs_to(self, field_name, field):
         resource = resource_for_model(field.rel.to)
