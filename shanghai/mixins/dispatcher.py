@@ -2,6 +2,7 @@ import sys
 
 from django.conf import settings
 from django.http import HttpResponseServerError
+from django.views.decorators.csrf import csrf_exempt
 
 from shanghai.http import HttpResponseNotImplemented
 from shanghai.utils import is_iterable, setattrs
@@ -62,6 +63,7 @@ class DispatcherMixin(object):
             body = self.request.body
             return json.loads(body.decode(settings.DEFAULT_CHARSET))
 
+    @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         setattrs(self, request=request, args=args, kwargs=kwargs)
 
