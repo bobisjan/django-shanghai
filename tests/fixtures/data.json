@@ -3,50 +3,81 @@
         "pk": 1,
         "model": "blog.article",
         "fields": {
-            "category": 1,
-            "perex": "Lorem ipsum",
+            "tags": [
+                1,
+                2
+            ],
             "title": "First article",
-            "tags": [1, 2]
+            "category": 1,
+            "perex": "Lorem ipsum"
         }
     },
     {
         "pk": 2,
         "model": "blog.article",
         "fields": {
-            "category": 1,
-            "perex": "Lorem ipsum",
+            "tags": [
+                1,
+                2
+            ],
             "title": "Second article",
-            "tags": [1, 2]
+            "category": 1,
+            "perex": "Lorem ipsum"
         }
     },
     {
         "pk": 3,
         "model": "blog.article",
         "fields": {
-            "category": 1,
-            "perex": "Lorem ipsum",
+            "tags": [
+                1,
+                2
+            ],
             "title": "Third article",
-            "tags": [1, 2]
+            "category": 1,
+            "perex": "Lorem ipsum"
         }
     },
     {
         "pk": 4,
         "model": "blog.article",
         "fields": {
-            "category": null,
-            "perex": "Lorem ipsum",
+            "tags": [
+                1,
+                2
+            ],
             "title": "Fourth article",
-            "tags": [1, 2]
+            "category": null,
+            "perex": "Lorem ipsum"
         }
     },
     {
         "pk": 5,
         "model": "blog.article",
         "fields": {
-            "category": null,
-            "perex": "Lorem ipsum",
+            "tags": [
+                1,
+                2
+            ],
             "title": "Fifth article",
-            "tags": [1, 2]
+            "category": null,
+            "perex": "Lorem ipsum"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "blog.extendedarticle",
+        "fields": {
+            "article": null,
+            "is_extended": true
+        }
+    },
+    {
+        "pk": 2,
+        "model": "blog.extendedarticle",
+        "fields": {
+            "article": 1,
+            "is_extended": true
         }
     },
     {
@@ -76,5 +107,12 @@
         "fields": {
             "name": "bbb"
         }
+    },
+    {
+        "pk": 1,
+        "fields": {
+            "is_extended": true
+        },
+        "model": "blog.extendedtag"
     }
 ]
