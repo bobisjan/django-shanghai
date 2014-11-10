@@ -7,8 +7,8 @@ class ArticleResource(Resource):
     name = 'articles'
 
     class Meta:
-        title = Attribute()
-        perex = Attribute()
+        title = Attribute('string')
+        perex = Attribute('string')
         category = BelongsTo('categories', inverse='articles')
 
 
@@ -18,5 +18,5 @@ class CategoryResource(Resource):
 
     class Meta:
         id = Id()
-        title = Attribute()
+        title = Attribute('string')
         articles = HasMany('articles', inverse='category')

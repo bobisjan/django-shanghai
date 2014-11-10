@@ -1,3 +1,6 @@
+from .transforms import transform_for
+
+
 class Property(object):
     """
     A base class for resource properties.
@@ -34,7 +37,12 @@ class Attribute(Property):
     """
     Represents an attribute on a resource.
     """
-    pass
+
+    def __init__(self, kind, transform=None, name=None, attr_name=None):
+        super(Attribute, self).__init__(name=name, attr_name=attr_name)
+
+        self.kind = kind
+        self.transform = transform or transform_for(self.kind)
 
 
 class Relationship(Property):

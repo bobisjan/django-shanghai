@@ -13,11 +13,14 @@ class ModelInspectionTesCase(TestCase):
         self._test_for_id('tags')
 
     def test_model_resource_should_have_attributes(self):
-        self._test_for_attributes('articles', ('title', 'perex'))
-        self._test_for_attributes('categories', ('name',))
-        self._test_for_attributes('extended_articles', ('is_extended',))
-        self._test_for_attributes('extended_tags', ('is_extended',))
-        self._test_for_attributes('tags', ('name',))
+        self._test_for_attributes('articles', (
+            {'name': 'title', 'kind': 'string'},
+            {'name': 'perex', 'kind': 'string'}
+        ))
+        self._test_for_attributes('categories', ({'name': 'name', 'kind': 'string'},))
+        self._test_for_attributes('extended_articles', ({'name': 'is_extended', 'kind': 'boolean'},))
+        self._test_for_attributes('extended_tags', ({'name': 'is_extended', 'kind': 'boolean'},))
+        self._test_for_attributes('tags', ({'name': 'name', 'kind': 'string'},))
 
     def test_model_resource_should_have_relationships(self):
         self._test_for_relationships('articles', {
@@ -38,15 +41,17 @@ class ModelInspectionTesCase(TestCase):
 
         self.assertIsInstance(resource.get_id(), Id)
 
-    def _test_for_attributes(self, resource_name, attribute_names):
+    def _test_for_attributes(self, resource_name, attribute_dict):
         resource = self.api.resource_for(resource_name)
         attributes = resource.get_attributes()
 
-        for name in attribute_names:
-            attr = attributes.get(name, None)
+        for attr_dict in attribute_dict:
+            attr = attributes.get(attr_dict['name'], None)
 
             self.assertIsNotNone(attr)
             self.assertIsInstance(attr, Attribute)
+
+            self.assertEqual(attr.kind, attr_dict['kind'])
 
     def _test_for_relationships(self, resource_name, relationships):
         resource = self.api.resource_for(resource_name)

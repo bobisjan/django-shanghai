@@ -3,7 +3,7 @@ import inspect
 from django.db import models
 
 from shanghai.properties import Id, Attribute, BelongsTo, HasMany
-from shanghai.utils import resource_for_model
+from shanghai.utils import resource_for_model, kind_of_field
 
 
 class Inspector(object):
@@ -121,7 +121,9 @@ class ModelInspector(Inspector):
 
     @staticmethod
     def attribute(field_name, field):
-        return Attribute(name=field_name)
+        kind = kind_of_field(field)
+
+        return Attribute(kind=kind, name=field_name)
 
     @staticmethod
     def is_foreign_key_field(field_name, field):
