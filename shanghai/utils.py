@@ -47,7 +47,8 @@ def kind_of_field(field):
     if isinstance(field, models.FloatField):
         return 'float'
 
-    if isinstance(field, (models.CharField, models.SlugField, models.TextField, models.URLField, models.EmailField)):
+    if isinstance(field, (models.CharField, models.SlugField, models.TextField, models.URLField, models.EmailField,
+                          models.FilePathField)):
         return 'string'
 
     if isinstance(field, models.DateField):
@@ -58,3 +59,6 @@ def kind_of_field(field):
 
     if isinstance(field, models.TimeField):
         return 'time'
+
+    if isinstance(field, (models.FileField, models.ImageField)):
+        return 'file'
