@@ -59,6 +59,7 @@ class Serializer(object):
     def serialize_attribute(self, obj, data, attribute):
         key = self.key_for_attribute(attribute)
         value = self.resource.fetch_attribute(obj, attribute)
+        value = attribute.transform.serialize(value)
         data[key] = value
 
     def serialize_relationship(self, obj, data, relationship):
@@ -182,6 +183,7 @@ class Serializer(object):
             return
 
         value = data.get(key)
+        value = attribute.transform.deserialize(value)
 
         obj[attribute.name] = value
 
