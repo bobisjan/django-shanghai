@@ -1,3 +1,5 @@
+from django.db import models
+
 import shanghai
 
 
@@ -31,34 +33,30 @@ def resource_for_model(model, api=shanghai.api):
             return resource
 
 
+field_to_kind = {
+    'django.db.models.fields.BooleanField': 'boolean',
+    'django.db.models.fields.DecimalField': 'decimal',
+    'django.db.models.fields.SmallIntegerField': 'integer',
+    'django.db.models.fields.PositiveSmallIntegerField': 'integer',
+    'django.db.models.fields.IntegerField': 'integer',
+    'django.db.models.fields.PositiveIntegerField': 'integer',
+    'django.db.models.fields.BigIntegerField': 'integer',
+    'django.db.models.fields.FloatField': 'float',
+    'django.db.models.fields.CharField': 'string',
+    'django.db.models.fields.SlugField': 'string',
+    'django.db.models.fields.TextField': 'string',
+    'django.db.models.fields.URLField': 'string',
+    'django.db.models.fields.EmailField': 'string',
+    'django.db.models.fields.FilePathField': 'string',
+    'django.db.models.fields.DateField': 'date',
+    'django.db.models.fields.DateTimeField': 'datetime',
+    'django.db.models.fields.TimeField': 'time',
+    'django.db.models.fields.FileField': 'file',
+    'django.db.models.fields.ImageField': 'file',
+}
+
+
 def kind_of_field(field):
-    from django.db import models
+    path = field.__module__ + '.' + type(field).__name__
 
-    if isinstance(field, models.BooleanField):
-        return 'boolean'
-
-    if isinstance(field, models.DecimalField):
-        return 'decimal'
-
-    if isinstance(field, (models.SmallIntegerField, models.PositiveSmallIntegerField, models.IntegerField,
-                          models.PositiveIntegerField, models.BigIntegerField)):
-        return 'integer'
-
-    if isinstance(field, models.FloatField):
-        return 'float'
-
-    if isinstance(field, (models.CharField, models.SlugField, models.TextField, models.URLField, models.EmailField,
-                          models.FilePathField)):
-        return 'string'
-
-    if isinstance(field, models.DateField):
-        return 'date'
-
-    if isinstance(field, models.DateTimeField):
-        return 'datetime'
-
-    if isinstance(field, models.TimeField):
-        return 'time'
-
-    if isinstance(field, (models.FileField, models.ImageField)):
-        return 'file'
+    return field_to_kind.get(path, None)
