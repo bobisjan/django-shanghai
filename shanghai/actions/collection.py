@@ -6,11 +6,12 @@ from shanghai.exceptions import TypeConflictError
 class CollectionMixin(object):
 
     def get_collection(self):
-        data = self.get_collection_data()
+        order_by = self.sort_parameters()
+        data = self.get_collection_data(order_by=order_by)
 
         return self.response(data)
 
-    def get_collection_data(self):
+    def get_collection_data(self, order_by=None):
         raise NotImplementedError()
 
     def collection_input_data(self):
@@ -32,8 +33,13 @@ class CollectionMixin(object):
 
 class ModelCollectionMixin(CollectionMixin):
 
-    def get_collection_data(self):
-        return self.queryset()
+    def get_collection_data(self, order_by=None):
+        qs = self.queryset()
+
+        if len(order_by):
+            qs = self.sort_queryset(qs, *order_by)
+
+        return qs
 
     def post_collection_object(self, data):
         with transaction.atomic():

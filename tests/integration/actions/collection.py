@@ -31,6 +31,43 @@ class GetEmptyCollectionTestCase(TestCase):
         self.assertEqual(len(articles), 0)
 
 
+class GetSortedCollectionTestCase(TestCase):
+
+    def test_app_should_respond_with_sorted_articles_asc(self):
+        response = self.client.get('/api/articles?sort=%2Btitle')
+
+        self.assertEqual(response.status_code, 200)
+
+        articles = response.document.get('data')
+
+        self.assertIsNotNone(articles)
+        self.assertIsInstance(articles, list)
+        self.assertTrue(len(articles) > 0)
+
+        first = articles[0]
+        last = articles[len(articles) - 1]
+
+        self.assertEqual(first.get('title'), 'Fifth article')
+        self.assertEqual(last.get('title'), 'Third article')
+
+    def test_app_should_respond_with_sorted_articles_desc(self):
+        response = self.client.get('/api/articles?sort=-title')
+
+        self.assertEqual(response.status_code, 200)
+
+        articles = response.document.get('data')
+
+        self.assertIsNotNone(articles)
+        self.assertIsInstance(articles, list)
+        self.assertTrue(len(articles) > 0)
+
+        first = articles[0]
+        last = articles[len(articles) - 1]
+
+        self.assertEqual(first.get('title'), 'Third article')
+        self.assertEqual(last.get('title'), 'Fifth article')
+
+
 class PostCollectionTestCase(TestCase):
 
     def test_app_should_create_article(self):
