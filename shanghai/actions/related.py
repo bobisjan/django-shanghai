@@ -78,4 +78,4 @@ class ModelRelatedMixin(RelatedMixin):
 
         related_manager = relationship.get_from(obj)
 
-        return len(related_manager.all())
+        return related_manager.all().count()

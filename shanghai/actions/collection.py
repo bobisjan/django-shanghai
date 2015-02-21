@@ -59,7 +59,7 @@ class ModelCollectionMixin(CollectionMixin):
         return qs
 
     def collection_total(self):
-        return len(self.queryset())
+        return self.queryset().count()
 
     def post_collection_object(self, data):
         with transaction.atomic():
