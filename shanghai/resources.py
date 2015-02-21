@@ -10,7 +10,7 @@ from shanghai.serializers import Serializer
 
 class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
                FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin,
-               object):
+               SortMixin, object):
     """
     A base class for all resources.
     """
@@ -114,7 +114,7 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
 
 class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                     ModelLinkedMixin, ModelRelatedMixin, ModelFetcherMixin,
-                    Resource):
+                    ModelSortMixin, Resource):
     """
     A model based resource.
     """

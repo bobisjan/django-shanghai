@@ -43,3 +43,40 @@ class GetRelatedHasManyTestCase(TestCase):
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
         self.assertTrue(len(articles) > 0)
+
+
+class GetSortedRelatedTestCase(TestCase):
+
+    def test_app_should_respond_with_sorted_tags_asc(self):
+        response = self.client.get('/api/articles/1/tags?sort=%2Bname')
+
+        self.assertEqual(response.status_code, 200)
+
+        tags = response.document.get('data')
+
+        self.assertIsNotNone(tags)
+        self.assertIsInstance(tags, list)
+        self.assertTrue(len(tags) > 0)
+
+        first = tags[0]
+        last = tags[len(tags) - 1]
+
+        self.assertEqual(first.get('name'), 'aaa')
+        self.assertEqual(last.get('name'), 'bbb')
+
+    def test_app_should_respond_with_sorted_tags_desc(self):
+        response = self.client.get('/api/articles/1/tags?sort=-name')
+
+        self.assertEqual(response.status_code, 200)
+
+        tags = response.document.get('data')
+
+        self.assertIsNotNone(tags)
+        self.assertIsInstance(tags, list)
+        self.assertTrue(len(tags) > 0)
+
+        first = tags[0]
+        last = tags[len(tags) - 1]
+
+        self.assertEqual(first.get('name'), 'bbb')
+        self.assertEqual(last.get('name'), 'aaa')

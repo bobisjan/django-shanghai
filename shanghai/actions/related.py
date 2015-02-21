@@ -21,7 +21,10 @@ class RelatedMixin(object):
         if not relationship:
             relationship = self.related_relationship()
 
-        return self.api.resource_for(relationship.target)
+        resource = self.api.resource_for(relationship.target)
+        setattr(resource, 'request', self.request)
+
+        return resource
 
 
 class ModelRelatedMixin(RelatedMixin):
@@ -35,5 +38,10 @@ class ModelRelatedMixin(RelatedMixin):
 
         elif relationship.is_has_many():
             related_manager = relationship.get_from(obj)
+            qs = related_manager.all()
 
-            return related_manager.all()
+            order_by = self.sort_parameters()
+            if len(order_by):
+                qs = self.sort_queryset(qs, *order_by)
+
+            return qs
