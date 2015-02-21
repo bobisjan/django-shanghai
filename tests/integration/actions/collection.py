@@ -8,7 +8,7 @@ class GetCollectionTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        articles = response.document.get('articles')
+        articles = response.document.get('data')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
@@ -24,7 +24,7 @@ class GetEmptyCollectionTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        articles = response.document.get('articles')
+        articles = response.document.get('data')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
@@ -35,11 +35,15 @@ class PostCollectionTestCase(TestCase):
 
     def test_app_should_create_article(self):
         data = {
-            'articles': {
+            'data': {
+                'type': 'articles',
                 'title': 'Lorem ipsum',
                 'perex': 'Lorem ipsum...',
                 'links': {
-                    'category': '1'
+                    'category': {
+                        'type': 'categories',
+                        'id': '1'
+                    }
                 }
             }
         }
@@ -53,36 +57,5 @@ class PostCollectionTestCase(TestCase):
 
         self.assertEquals(response.status_code, 200)
 
-        articles = response.document.get('articles')
-        self.assertIsNotNone(articles)
-
-    def test_app_should_create_articles(self):
-        data = {
-            'articles': [{
-                'title': 'Lorem ipsum #1',
-                'perex': 'Lorem ipsum #1...',
-                'links': {
-                    'category': None
-                }
-            }, {
-                'title': 'Lorem ipsum #2',
-                'perex': 'Lorem ipsum #2...',
-                'links': {
-                    'category': '1'
-                }
-            }]
-        }
-
-        response = self.client.post('/api/articles', data)
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response['Location'], 'http://testserver/api/articles/6,7')
-
-        response = self.client.get('/api/articles/6,7')
-        self.assertEquals(response.status_code, 200)
-
-        response = self.client.get('/api/articles/6')
-        self.assertEquals(response.status_code, 200)
-
-        response = self.client.get('/api/articles/7')
-        self.assertEquals(response.status_code, 200)
+        article = response.document.get('data')
+        self.assertIsNotNone(article)

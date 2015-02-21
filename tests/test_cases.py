@@ -18,27 +18,38 @@ class Client(test.Client):
 
         return response
 
-    def post(self, path, data=None, follow=False, secure=False, **extra):
+    def post(self, path, data=None, content_type=settings.CONTENT_TYPE, follow=False, secure=False, **extra):
         if data:
             data = json.dumps(data, cls=DjangoJSONEncoder)
 
         return super(Client, self).post(path,
                                         data=data,
-                                        content_type=settings.CONTENT_TYPE,
+                                        content_type=content_type,
                                         follow=follow,
                                         secure=secure,
                                         **extra)
 
-    def put(self, path, data=None, follow=False, secure=False, **extra):
+    def put(self, path, data='', content_type=settings.CONTENT_TYPE, follow=False, secure=False, **extra):
         if data:
             data = json.dumps(data, cls=DjangoJSONEncoder)
 
         return super(Client, self).put(path,
                                        data=data,
-                                       content_type=settings.CONTENT_TYPE,
+                                       content_type=content_type,
                                        follow=follow,
                                        secure=secure,
                                        **extra)
+
+    def delete(self, path, data='', content_type=settings.CONTENT_TYPE, follow=False, secure=False, **extra):
+        if data:
+            data = json.dumps(data, cls=DjangoJSONEncoder)
+
+        return super(Client, self).delete(path,
+                                          data=data,
+                                          content_type=content_type,
+                                          follow=follow,
+                                          secure=secure,
+                                          **extra)
 
 
 class TestCase(test.TestCase):

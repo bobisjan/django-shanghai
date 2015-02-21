@@ -1,9 +1,12 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.http import HttpResponseNotFound
+import logging
 
-from shanghai.exceptions import LinkedResourceAlreadyExists
-from shanghai.http import HttpResponseConflict, JsonApiResponse
+from django.http import HttpResponseServerError
+
+from shanghai.http import JsonApiResponse
 from shanghai.utils import is_iterable
+
+
+logger = logging.getLogger(__name__)
 
 
 class ResponderMixin(object):
@@ -22,59 +25,30 @@ class ResponderMixin(object):
         if not is_iterable(object_or_iterable):
             object_or_iterable = [object_or_iterable]
 
-        pk = list()
+        pks = list()
         _id = self.get_id()
 
         for obj in object_or_iterable:
-            _pk = _id.get_from(obj)
-            _pk = self.serializer.normalize_id(_pk)
-            pk.append(_pk)
+            pk = _id.get_from(obj)
+            pk = self.serializer.normalize_id(pk)
+            pks.append(pk)
 
-        if len(pk) > 1:
+        if len(pks) > 1:
             pk = ','.join(pk)
         else:
-            pk = pk[0]
+            pk = pks[0]
 
         location = self.reverse_url(pk=pk)
         response['Location'] = location
 
         return response
 
-    def response_with_error(self, error, **kwargs):
-        kwargs.setdefault('status', 400)
+    def response_with_error(self, error):
+        get_response = getattr(error, 'get_response', None)
 
-        errors = list()
+        if get_response is None:
+            logger.exception(error)
+            return HttpResponseServerError()
 
-        if isinstance(error, ObjectDoesNotExist):
-            return HttpResponseNotFound()
-
-        if isinstance(error, LinkedResourceAlreadyExists):
-            return HttpResponseConflict()
-
-        if isinstance(error, ValidationError):
-            validation_errors = self.from_validation_error(error, **kwargs)
-            errors.extend(validation_errors)
-
-        return JsonApiResponse(dict(errors=errors), **kwargs)
-
-    def from_validation_error(self, error, **kwargs):
-        errors = list()
-
-        if hasattr(error, 'error_dict'):
-            for key, error_list in error.message_dict.items():
-                for _error in error_list:
-                    errors.append(self.error_dict(key, kwargs['status'], _error))
-
-        return errors
-
-    @staticmethod
-    def error_dict(id, status, title, **kwargs):
-        error = dict(
-            id=id,
-            status=status,
-            title=title
-        )
-
-        error.update(**kwargs)
-
-        return error
+        logger.error(error)
+        return get_response()

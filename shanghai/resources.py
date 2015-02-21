@@ -1,13 +1,16 @@
+from django.core.exceptions import ValidationError
+
 import shanghai
 from shanghai.actions import *
+from shanghai.exceptions import ModelValidationError, NotFoundError
 from shanghai.inspectors import Inspector, MetaInspector, ModelInspector
 from shanghai.mixins import *
 from shanghai.serializers import Serializer
 
 
-class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
-               LinkedMixin, LinkedObjectMixin, LinkedObjectsMixin,
-               FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin, object):
+class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
+               FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin,
+               object):
     """
     A base class for all resources.
     """
@@ -34,7 +37,7 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
         self.action = None
         self.pk = None
         self.link = None
-        self.link_pk = None
+        self.related = None
 
         self.input = None
 
@@ -64,18 +67,18 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
 
         view = self.dispatch
         pk = '\w+([,]?(\w+))*'
-        link = '\w+'
+        link = related = '\w+'
 
         url_patterns = patterns('',
-            url(r'^{0}/(?P<pk>{1})/links/(?P<link>{2})/(?P<link_pk>{1})'.format(self.type, pk, link), view, name=self.url_pattern_name('pk', 'link', 'link-pk')),
             url(r'^{0}/(?P<pk>{1})/links/(?P<link>{2})'.format(self.type, pk, link), view, name=self.url_pattern_name('pk', 'link')),
+            url(r'^{0}/(?P<pk>{1})/(?P<related>{2})'.format(self.type, pk, related), view, name=self.url_pattern_name('pk', 'related')),
             url(r'^{0}/(?P<pk>{1})'.format(self.type, pk), view, name=self.url_pattern_name('pk')),
             url(r'^{0}'.format(self.type), view, name=self.url_pattern_name()),
         )
 
         return url_patterns
 
-    def reverse_url(self, pk=None, link=None, link_pk=None):
+    def reverse_url(self, pk=None, link=None, related=None):
         from django.core.urlresolvers import reverse
 
         pattern_args = list()
@@ -89,14 +92,17 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
             pattern_args.append('link')
             reverse_args.append(link)
 
-        if link_pk:
-            pattern_args.append('link-pk')
-            reverse_args.append(link_pk)
+        if related:
+            pattern_args.append('related')
+            reverse_args.append(related)
 
         name = self.url_pattern_name(*pattern_args)
         url = reverse(name, args=reverse_args)
 
         return url.replace('%2C', ',')
+
+    def absolute_reverse_url(self, pk=None, link=None, related=None):
+        return self.request.build_absolute_uri(self.reverse_url(pk, link, related))
 
     @property
     def urls(self):
@@ -106,9 +112,9 @@ class Resource(CollectionMixin, ObjectMixin, ObjectsMixin,
         return self.name
 
 
-class ModelResource(ModelCollectionMixin, ModelObjectMixin, ModelObjectsMixin,
-                    ModelLinkedMixin, ModelLinkedObjectMixin, ModelLinkedObjectsMixin,
-                    ModelFetcherMixin, Resource):
+class ModelResource(ModelCollectionMixin, ModelObjectMixin,
+                    ModelLinkedMixin, ModelRelatedMixin, ModelFetcherMixin,
+                    Resource):
     """
     A model based resource.
     """
@@ -117,5 +123,67 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin, ModelObjectsMixin,
 
     inspector = ModelInspector
 
-    def get_queryset(self):
+    def queryset(self):
         return self.model.objects.all()
+
+    def _get_objects_data(self, pks):
+        if not pks or not len(pks):
+            return list()
+
+        objects = self.queryset().filter(pk__in=pks)
+
+        if len(pks) != len(objects):
+            raise NotFoundError()
+
+        return objects
+
+    def create_object(self):
+        return self.model()
+
+    def save_object(self, obj, data):
+        pk, attributes, links = self.serializer.unpack(data)
+        update_fields = list()
+
+        for key, value in attributes.items():
+            setattr(obj, key, value)
+            update_fields.append(key)
+
+        for key, linked_data in links.items():
+            relationship = self.relationship_for(key)
+            linked_resource = self.linked_resource(relationship)
+
+            if relationship.is_belongs_to():
+                linked_obj = None
+
+                if linked_data:
+                    pk = linked_data.get('id')  # TODO extract id via serializer
+                    linked_obj = linked_resource.get_object_data(pk)
+
+                relationship.set_to(obj, linked_obj)
+                update_fields.append(key)
+
+        try:
+            obj.full_clean()
+        except ValidationError as error:
+            raise ModelValidationError(error)
+
+        if obj.pk:
+            obj.save(update_fields=update_fields)
+        else:
+            obj.save()
+
+        for key, linked_data in links.items():
+            relationship = self.relationship_for(key)
+            resource = self.linked_resource(relationship)
+
+            if relationship.is_has_many():
+                related_manager = relationship.get_from(obj)
+                pks = linked_data.get('ids')  # TODO extract ids via serializer
+                linked_objects = list()
+
+                if len(pks):
+                    linked_objects = resource._get_objects_data(pks)
+
+                relationship.set_to(obj, linked_objects)
+
+        return obj

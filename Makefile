@@ -1,4 +1,4 @@
-PY := python3
+PY := bin/python
 PY_VERSION := $(shell ${PY} --version 2>&1 | cut -f 2 -d ' ')
 
 COVERAGE := bin/coverage-3.4
