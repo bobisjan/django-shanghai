@@ -80,3 +80,21 @@ class GetSortedRelatedTestCase(TestCase):
 
         self.assertEqual(first.get('name'), 'bbb')
         self.assertEqual(last.get('name'), 'aaa')
+
+
+class GetPaginatedHasManyTestCase(TestCase):
+
+    def test_app_should_respond_with_paginated_has_many(self):
+        response = self.client.get('/api/articles/1/tags?page%5Boffset%5D=0&page%5Blimit%5D=2')
+        self.assertEqual(response.status_code, 200)
+
+        tags = response.document.get('data')
+        self.assertEqual(len(tags), 2)
+        self.assertEqual(tags[0].get('id'), '1')
+        self.assertEqual(tags[1].get('id'), '2')
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('first'), 'http://testserver/api/articles/1/tags?page[offset]=0&page[limit]=2')
+        self.assertIsNone(links.get('prev'))
+        self.assertIsNone(links.get('next'))
+        self.assertEqual(links.get('last'), 'http://testserver/api/articles/1/tags?page[offset]=0&page[limit]=2')

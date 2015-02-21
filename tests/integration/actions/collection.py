@@ -68,6 +68,51 @@ class GetSortedCollectionTestCase(TestCase):
         self.assertEqual(last.get('title'), 'Fifth article')
 
 
+class GetPaginatedCollectionTestCase(TestCase):
+
+    def test_app_should_respond_with_paginated_articles(self):
+        response = self.client.get('/api/articles?page%5Boffset%5D=0&page%5Blimit%5D=2')
+        self.assertEqual(response.status_code, 200)
+
+        articles = response.document.get('data')
+        self.assertEqual(len(articles), 2)
+        self.assertEqual(articles[0].get('id'), '1')
+        self.assertEqual(articles[1].get('id'), '2')
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('first'), 'http://testserver/api/articles?page[offset]=0&page[limit]=2')
+        self.assertIsNone(links.get('prev'))
+        self.assertEqual(links.get('next'), 'http://testserver/api/articles?page[offset]=2&page[limit]=2')
+        self.assertEqual(links.get('last'), 'http://testserver/api/articles?page[offset]=4&page[limit]=2')
+
+        response = self.client.get('/api/articles?page%5Boffset%5D=2&page%5Blimit%5D=2')
+        self.assertEqual(response.status_code, 200)
+
+        articles = response.document.get('data')
+        self.assertEqual(len(articles), 2)
+        self.assertEqual(articles[0].get('id'), '3')
+        self.assertEqual(articles[1].get('id'), '4')
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('first'), 'http://testserver/api/articles?page[offset]=0&page[limit]=2')
+        self.assertEqual(links.get('prev'), 'http://testserver/api/articles?page[offset]=0&page[limit]=2')
+        self.assertEqual(links.get('next'), 'http://testserver/api/articles?page[offset]=4&page[limit]=2')
+        self.assertEqual(links.get('last'), 'http://testserver/api/articles?page[offset]=4&page[limit]=2')
+
+        response = self.client.get('/api/articles?page%5Boffset%5D=4&page%5Blimit%5D=2')
+        self.assertEqual(response.status_code, 200)
+
+        articles = response.document.get('data')
+        self.assertEqual(len(articles), 1)
+        self.assertEqual(articles[0].get('id'), '5')
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('first'), 'http://testserver/api/articles?page[offset]=0&page[limit]=2')
+        self.assertEqual(links.get('prev'), 'http://testserver/api/articles?page[offset]=2&page[limit]=2')
+        self.assertIsNone(links.get('next'))
+        self.assertEqual(links.get('last'), 'http://testserver/api/articles?page[offset]=4&page[limit]=2')
+
+
 class PostCollectionTestCase(TestCase):
 
     def test_app_should_create_article(self):

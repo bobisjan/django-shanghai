@@ -15,7 +15,10 @@ class ResponderMixin(object):
         if not serializer:
             serializer = getattr(self, 'serializer')
 
-        serialized_data = serializer.serialize(data)
+        serialized_data = serializer.serialize(data, **kwargs)
+
+        if 'links' in kwargs:
+            del kwargs['links']
 
         return JsonApiResponse(serialized_data, **kwargs)
 

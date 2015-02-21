@@ -7,11 +7,25 @@ class CollectionMixin(object):
 
     def get_collection(self):
         order_by = self.sort_parameters()
-        data = self.get_collection_data(order_by=order_by)
+        pagination = self.pagination_parameters()
 
-        return self.response(data)
+        data = self.get_collection_data(
+            order_by=order_by,
+            pagination=pagination
+        )
+
+        links = dict()
+
+        if pagination:
+            total = self.collection_total()
+            self.add_pagination_links(links, pagination, total)
+
+        return self.response(data, links=links)
 
     def get_collection_data(self, order_by=None):
+        raise NotImplementedError()
+
+    def collection_total():
         raise NotImplementedError()
 
     def collection_input_data(self):
@@ -33,13 +47,19 @@ class CollectionMixin(object):
 
 class ModelCollectionMixin(CollectionMixin):
 
-    def get_collection_data(self, order_by=None):
+    def get_collection_data(self, order_by=None, pagination=None):
         qs = self.queryset()
 
         if len(order_by):
             qs = self.sort_queryset(qs, *order_by)
 
+        if pagination:
+            qs = self.limit_queryset(qs, pagination)
+
         return qs
+
+    def collection_total(self):
+        return len(self.queryset())
 
     def post_collection_object(self, data):
         with transaction.atomic():
