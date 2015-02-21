@@ -10,10 +10,13 @@ class Serializer(object):
     def __init__(self, resource):
         self.resource = resource
 
-    def serialize(self, object_or_iterable):
+    def serialize(self, object_or_iterable, links=None, **kwargs):
         document = dict()
 
         document['data'] = self.serialize_object_or_iterable(object_or_iterable)
+
+        if links:
+            document['links'] = links
 
         return document
 
