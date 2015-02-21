@@ -1,136 +1,111 @@
-from django.http import HttpResponseNotFound
-
-from shanghai.exceptions import LinkedResourceAlreadyExists
+from shanghai.exceptions import ForbiddenError
 from shanghai.http import HttpResponseNoContent
 
 
 class LinkedMixin(object):
 
-    def get_linked_relationship(self):
+    def linked_relationship(self):
         return self.relationship_for(self.link)
 
-    def get_linked_resource(self, relationship=None):
+    def linked_resource(self, relationship=None):
         if not relationship:
-            relationship = self.get_linked_relationship()
+            relationship = self.linked_relationship()
 
         return self.api.resource_for(relationship.target)
 
-    def get_linked_serializer(self):
-        resource = self.get_linked_resource()
-
-        return resource.serializer
-
-    def get_linked_data(self):
-        raise NotImplementedError()
-
-    def get_linked_input_data(self):
-        relationship = self.get_linked_relationship()
-        return self.input.get(relationship.target)
-
-    def get_linked(self):
-        data = self.get_linked_data()
-        serializer = self.get_linked_serializer()
-
-        return self.response(data, serializer=serializer)
+    def linked_input_data(self):
+        return self.input.get('data')
 
     def post_linked(self):
         obj = self.get_object_data()
-        relationship = self.get_linked_relationship()
+        relationship = self.linked_relationship()
 
-        self.post_linked_data(obj, relationship)
+        if not relationship.is_has_many():
+            raise ForbiddenError()
+
+        self.post_linked_has_many(obj, relationship)
 
         return HttpResponseNoContent()
 
-    def post_linked_data(self, obj, relationship):
+    def post_linked_has_many(self, obj, relationship):
         raise NotImplementedError()
 
     def put_linked(self):
         obj = self.get_object_data()
-        relationship = self.get_linked_relationship()
-        linked_resource = self.get_linked_resource()
-        linked_pk = self.get_linked_input_data()
+        relationship = self.linked_relationship()
+        linked_resource = self.linked_resource()
+        linked_data = self.linked_input_data()
 
-        self.put_linked_data(obj, relationship, linked_resource, linked_pk)
+        if relationship.is_belongs_to():
+            self.put_linked_belongs_to(obj, relationship, linked_resource, linked_data)
+        elif relationship.is_has_many():
+            self.put_linked_has_many(obj, relationship, linked_resource, linked_data)
+        else:
+            raise ForbiddenError()
 
         return HttpResponseNoContent()
 
-    def put_linked_data(self, obj, relationship, linked_resource, linked_pk):
+    def put_linked_belongs_to(self, obj, relationship, linked_resource, linked_data):
+        raise NotImplementedError()
+
+    def put_linked_has_many(self, obj, relationship, linked_resource, linked_data):
         raise NotImplementedError()
 
     def delete_linked(self):
         obj = self.get_object_data()
-        relationship = self.get_linked_relationship()
+        data = self.linked_input_data()
+        relationship = self.linked_relationship()
 
-        if not relationship.is_belongs_to():
-            return HttpResponseNotFound()
+        if not relationship.is_has_many():
+            raise ForbiddenError()
 
-        self.delete_linked_data(obj, relationship)
+        self.delete_linked_has_many(obj, data, relationship)
 
         return HttpResponseNoContent()
 
-    def delete_linked_data(self, obj, relationship):
+    def delete_linked_has_many(self, obj, data, relationship):
         raise NotImplementedError()
 
 
 class ModelLinkedMixin(LinkedMixin):
 
-    def get_linked_data(self):
-        obj = self.get_object_data()
-        relationship = self.get_linked_relationship()
+    def post_linked_has_many(self, obj, relationship):
+        related_manager = relationship.get_from(obj)
+        linked_data = self.linked_input_data()
+        linked_resource = self.linked_resource()
 
-        if relationship.is_belongs_to():
-            return relationship.get_from(obj)
-        elif relationship.is_has_many():
-            related_manager = relationship.get_from(obj)
+        pks = linked_data.get('ids')  # TODO extract ids via serializer
 
-            return related_manager.all()
+        count = related_manager.all().filter(pk__in=pks).count()
+        if count > 0:
+            raise ForbiddenError()
 
-    def post_linked_data(self, obj, relationship):
-        if relationship.is_belongs_to():
-            link = self.get_linked_data()
-            if link:
-                raise LinkedResourceAlreadyExists(self, obj, relationship, link)
+        linked_objects = linked_resource._get_objects_data(pks)
+        related_manager.add(*linked_objects)
 
-            linked_pk = self.get_linked_input_data()
-            linked_resource = self.get_linked_resource()
-            linked_object = linked_resource.get_object_data(linked_pk)
+    def put_linked_belongs_to(self, obj, relationship, linked_resource, linked_data):
+        linked_obj = None
 
-            relationship.set_to(obj, linked_object)
-            obj.save()
-        elif relationship.is_has_many():
-            related_manager = relationship.get_from(obj)
+        if linked_data:
+            pk = linked_data.get('id')  # TODO extract id via serializer
+            linked_obj = linked_resource.get_object_data(pk)
 
-            if related_manager.count():
-                raise LinkedResourceAlreadyExists(self, obj, relationship, related_manager.all())
+        relationship.set_to(obj, linked_obj)
+        obj.save(update_fields=[relationship.name])
 
-            linked_pk = self.get_linked_input_data()
-            linked_resource = self.get_linked_resource()
+    def put_linked_has_many(self, obj, relationship, linked_resource, linked_data):
+        linked_objects = list()
+        pks = linked_data.get('ids')  # TODO extract ids via serializer
 
-            if isinstance(linked_pk, str):
-                linked_pk = linked_pk,
+        if len(pks):
+            linked_objects = linked_resource._get_objects_data(pks)
 
-            linked_objects = linked_resource.get_objects_data(linked_pk)
-            related_manager.add(*linked_objects)
+        relationship.set_to(obj, linked_objects)
 
-    def put_linked_data(self, obj, relationship, linked_resource, linked_pk):
-        if relationship.is_belongs_to():
-            linked_obj = None
+    def delete_linked_has_many(self, obj, data, relationship):
+        related_manager = relationship.get_from(obj)
+        resource = self.linked_resource()
+        pks = data.get('ids')  # TODO extract ids via serializer
+        linked_objects = resource._get_objects_data(pks)
 
-            if linked_pk:
-                linked_obj = linked_resource.get_object_data(linked_pk)
-
-            relationship.set_to(obj, linked_obj)
-            obj.save(update_fields=[relationship.name])
-
-        elif relationship.is_has_many():
-            linked_objects = list()
-
-            if len(linked_pk):
-                linked_objects = linked_resource.get_objects_data(linked_pk)
-
-            relationship.set_to(obj, linked_objects)
-
-    def delete_linked_data(self, obj, relationship):
-        relationship.set_to(obj, None)
-        update_fields = [relationship.name]
-        obj.save(update_fields=update_fields)
+        related_manager.remove(*linked_objects)

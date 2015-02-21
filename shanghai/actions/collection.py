@@ -1,36 +1,30 @@
 from django.db import transaction
 
+from shanghai.exceptions import TypeConflictError
+
 
 class CollectionMixin(object):
-
-    def get_collection_data(self):
-        raise NotImplementedError()
 
     def get_collection(self):
         data = self.get_collection_data()
 
         return self.response(data)
 
-    def get_collection_input_data(self):
+    def get_collection_data(self):
+        raise NotImplementedError()
+
+    def collection_input_data(self):
         return self.serializer.extract(self.input)
 
     def post_collection(self):
-        data = self.get_collection_input_data()
+        data = self.collection_input_data()
 
-        object_or_iterable = self.post_collection_data(data)
+        if self.type != data.get('type'):
+            raise TypeConflictError(self.type, data.get('type'))
 
-        return self.response_with_location(object_or_iterable)
+        obj = self.post_collection_object(data)
 
-    def post_collection_data(self, data):
-        if isinstance(data, list):
-            return self.post_collection_objects(data)
-        elif isinstance(data, dict):
-            return self.post_collection_object(data)
-        else:
-            raise RuntimeError()
-
-    def post_collection_objects(self, data):
-        raise NotImplementedError()
+        return self.response_with_location(obj)
 
     def post_collection_object(self, data):
         raise NotImplementedError()
@@ -39,57 +33,8 @@ class CollectionMixin(object):
 class ModelCollectionMixin(CollectionMixin):
 
     def get_collection_data(self):
-        return self.get_queryset()
-
-    def _post_collection_object(self, data):
-        pk, attributes, links = self.serializer.unpack(data)
-
-        obj = self.model(**attributes)
-
-        for key, linked_pk in links.items():
-            relationship = self.relationship_for(key)
-            linked_resource = self.get_linked_resource(relationship)
-
-            if relationship.is_belongs_to():
-                linked_obj = None
-
-                if linked_pk:
-                    linked_obj = linked_resource.get_object_data(linked_pk)
-
-                relationship.set_to(obj, linked_obj)
-
-        obj.full_clean()
-        obj.save()
-
-        for key, linked_pk in links.items():
-            relationship = self.relationship_for(key)
-            linked_resource = self.get_linked_resource(relationship)
-
-            if relationship.is_has_many():
-                linked_objects = list()
-
-                if len(linked_pk):
-                    linked_objects = linked_resource.get_objects_data(linked_pk)
-
-                    if len(linked_pk) != len(linked_objects):
-                        raise RuntimeError()
-
-                relationship.set_to(obj, linked_objects)
-
-        return obj
+        return self.queryset()
 
     def post_collection_object(self, data):
         with transaction.atomic():
-            return self._post_collection_object(data)
-
-    def post_collection_objects(self, data):
-        objects = list()
-
-        with transaction.atomic():
-            for item in data:
-                obj = self._post_collection_object(item)
-
-                objects.append(obj)
-
-        return objects
-
+            return self.save_object(self.create_object(), data)
