@@ -1,3 +1,6 @@
+import inflection
+
+
 class SortMixin(object):
 
     def sort_parameters(self):
@@ -6,21 +9,26 @@ class SortMixin(object):
         if order_by is None:
             return list()
 
-        return order_by.split(',')
+        params = order_by.split(',')
+
+        return list(map(self.normalize_sort_parameter, params))
+
+    def normalize_sort_parameter(self, param):
+        return param
 
 
 class ModelSortMixin(SortMixin):
 
-    def sort_parameters(self):
-        params = super(ModelSortMixin, self).sort_parameters()
-
-        return list(map(self._normalize_sort, params))
-
     def sort_queryset(self, qs, *order_by):
         return qs.order_by(*order_by)
 
-    @staticmethod
-    def _normalize_sort(sort):
-        if sort.startswith('+'):
-            return sort[1:]
-        return sort
+    def normalize_sort_parameter(self, param):
+        sign = param[0]
+        param = param[1:]
+
+        param = param.replace('.', '__')
+        param = inflection.underscore(param)
+
+        if sign == '+':
+            return param
+        return sign + param
