@@ -21,6 +21,9 @@ class GetRelatedBelongsToTestCase(TestCase):
         self.assertIsNotNone(category)
         self.assertIsInstance(category, dict)
 
+        links = category.get('links')
+        self.assertEqual(links.get('self'), 'http://testserver/api/categories/1')
+
     def test_app_should_respond_with_empty_category(self):
         response = self.client.get('/api/articles/4/category')
 
@@ -43,6 +46,10 @@ class GetRelatedHasManyTestCase(TestCase):
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
         self.assertTrue(len(articles) > 0)
+
+        for article in articles:
+            links = article.get('links')
+            self.assertEqual(links.get('self'), 'http://testserver/api/articles/' + article.get('id'))
 
 
 class GetSortedRelatedTestCase(TestCase):
