@@ -4,8 +4,6 @@ from shanghai.properties import Id, Attribute, BelongsTo, HasMany
 
 class ArticleResource(Resource):
 
-    name = 'articles'
-
     class Meta:
         title = Attribute('string')
         perex = Attribute('string')
@@ -13,8 +11,6 @@ class ArticleResource(Resource):
 
 
 class CategoryResource(Resource):
-
-    name = 'categories'
 
     class Meta:
         id = Id()

@@ -1,3 +1,5 @@
+import inflection
+
 from shanghai.exceptions import ForbiddenError
 from shanghai.utils import is_iterable
 
@@ -144,20 +146,16 @@ class Serializer(object):
         return self.resource.api.resource_for(relationship.target)
 
     def key_for_type(self, name):
-        # TODO camelize
-        return name
+        return inflection.dasherize(name)
 
     def key_for_id(self, pk):
-        # TODO camelize
-        return pk.name
+        return inflection.dasherize(pk.name)
 
     def key_for_attribute(self, attribute):
-        # TODO camelize
-        return attribute.name
+        return inflection.dasherize(attribute.name)
 
     def key_for_relationship(self, relationship):
-        # TODO camelize
-        return relationship.name
+        return inflection.dasherize(relationship.name)
 
     def extract(self, document):
         object_or_iterable = document.get('data')
