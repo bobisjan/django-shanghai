@@ -5,11 +5,9 @@ from shanghai.resources import ModelResource
 
 class GroupResource(ModelResource):
 
-    name = 'groups'
     model = Group
 
 
 class UserResource(ModelResource):
 
-    name = 'users'
     model = User

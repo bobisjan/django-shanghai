@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
 
+import inflection
+
 import shanghai
 from shanghai.actions import *
 from shanghai.exceptions import ModelValidationError, NotFoundError
@@ -42,12 +44,18 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
         self.input = None
 
     def resolve_name(self):
-        # TODO resolve from class name if not specified
-        return getattr(type(self), 'name')
+        cls = type(self)
+        name = getattr(cls, 'name', None)
+
+        if name is None:
+            name = cls.__name__[:-len('Resource')]
+            name = inflection.underscore(name)
+            name = inflection.pluralize(name)
+
+        return name
 
     def resolve_type(self):
-        # TODO dasherize
-        return self.name.replace('_', '-')
+        return inflection.dasherize(self.name)
 
     def resolve_inspector(self):
         inspector = getattr(type(self), 'inspector', Inspector)
@@ -60,7 +68,7 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
         return serializer(self)
 
     def url_pattern_name(self, *args):
-        return '-'.join([self.api.name, self.name] + list(args))
+        return '-'.join([self.api.name, self.type] + list(args))
 
     def generate_urls(self):
         from django.conf.urls import patterns, url
