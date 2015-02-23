@@ -13,14 +13,17 @@ class SortMixin(object):
 
         return list(map(self.normalize_sort_parameter, params))
 
+    def sort_collection(self, collection, *order_by):
+        raise NotImplementedError()
+
     def normalize_sort_parameter(self, param):
         return param
 
 
 class ModelSortMixin(SortMixin):
 
-    def sort_queryset(self, qs, *order_by):
-        return qs.order_by(*order_by)
+    def sort_collection(self, collection, *order_by):
+        return collection.order_by(*order_by)
 
     def normalize_sort_parameter(self, param):
         sign = param[0]

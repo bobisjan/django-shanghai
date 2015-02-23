@@ -9,30 +9,21 @@ class CollectionMixin(object):
         order_by = self.sort_parameters()
         pagination = self.pagination_parameters()
 
-        data = self.get_collection_data(
-            order_by=order_by,
-            pagination=pagination
-        )
-
+        collection = self.fetch_collection()
         links = dict()
 
+        if len(order_by):
+            collection = self.sort_collection(collection, *order_by)
+
         if pagination:
-            total = self.collection_total()
+            total = self.count_collection(collection)
+            collection = self.paginate_collection(collection, pagination)
             self.add_pagination_links(links, pagination, total)
 
-        return self.response(data, links=links)
-
-    def get_collection_data(self, order_by=None):
-        raise NotImplementedError()
-
-    def collection_total():
-        raise NotImplementedError()
-
-    def collection_input_data(self):
-        return self.serializer.extract(self.input)
+        return self.response(collection, links=links)
 
     def post_collection(self):
-        data = self.collection_input_data()
+        data = self.resolve_collection_input()
 
         if self.type != data.get('type'):
             raise TypeConflictError(self.type, data.get('type'))
@@ -44,22 +35,11 @@ class CollectionMixin(object):
     def post_collection_object(self, data):
         raise NotImplementedError()
 
+    def resolve_collection_input(self):
+        return self.serializer.extract(self.input)
+
 
 class ModelCollectionMixin(CollectionMixin):
-
-    def get_collection_data(self, order_by=None, pagination=None):
-        qs = self.queryset()
-
-        if len(order_by):
-            qs = self.sort_queryset(qs, *order_by)
-
-        if pagination:
-            qs = self.limit_queryset(qs, pagination)
-
-        return qs
-
-    def collection_total(self):
-        return self.queryset().count()
 
     def post_collection_object(self, data):
         with transaction.atomic():

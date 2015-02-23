@@ -12,8 +12,14 @@ class PaginationMixin(object):
 
         return None
 
+    def paginate_collection(self, collection, pagination):
+        raise NotImplementedError()
+
     def is_offset_limit_strategy(self, pagination):
         return 'offset' in pagination and 'limit' in pagination
+
+    def count_collection(self, collection):
+        raise NotImplementedError()
 
 
 class ModelPaginationMixin(PaginationMixin):
@@ -29,11 +35,14 @@ class ModelPaginationMixin(PaginationMixin):
 
         return pagination
 
-    def limit_queryset(self, qs, pagination):
+    def paginate_collection(self, collection, pagination):
         offset = pagination.get('offset')
         limit = pagination.get('limit')
 
-        return qs[offset:offset+limit]
+        return collection[offset:offset+limit]
+
+    def count_collection(self, collection):
+        return collection.count()
 
     def add_pagination_links(self, links, pagination, total, **kwargs):
         offset = pagination.get('offset')
