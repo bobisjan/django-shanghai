@@ -51,6 +51,10 @@ class ModelRelatedMixin(RelatedMixin):
         serializer = self.related_serializer()
         links = dict()
 
+        filters = self.filter_parameters()
+        if len(filters):
+            collection = self.filter_collection(collection, **filters)
+
         order_by = self.sort_parameters()
         if len(order_by):
             collection = self.sort_collection(collection, *order_by)

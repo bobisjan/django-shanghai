@@ -3,6 +3,7 @@ import inspect
 from django.db import models
 
 from shanghai.properties import Id, Attribute, BelongsTo, HasMany
+from shanghai.transforms import transform_for
 from shanghai.utils import resource_for_model, kind_of_field
 
 
@@ -159,7 +160,10 @@ class ModelInspector(Inspector):
                 attr_name = field_name + '_id'
 
             if primary_key:
-                _id = Id(attr_name=attr_name)
+                kind = kind_of_field(field)
+                transform = transform_for(kind)
+
+                _id = Id(transform=transform, attr_name=attr_name)
                 break
 
         setattr(self.resource, 'id', _id)

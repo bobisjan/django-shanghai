@@ -31,6 +31,22 @@ class GetEmptyCollectionTestCase(TestCase):
         self.assertEqual(len(articles), 0)
 
 
+class GetFilteredCollectionTestCase(TestCase):
+
+    def test_app_should_respond_with_filtered_articles(self):
+        response = self.client.get('/api/articles?filter[title:startswith]=Se')
+
+        self.assertEqual(response.status_code, 200)
+
+        articles = response.document.get('data')
+
+        self.assertIsNotNone(articles)
+        self.assertIsInstance(articles, list)
+        self.assertEqual(len(articles), 1)
+
+        self.assertEqual(articles[0].get('title'), 'Second article')
+
+
 class GetSortedCollectionTestCase(TestCase):
 
     def test_app_should_respond_with_sorted_articles_asc(self):

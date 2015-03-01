@@ -29,8 +29,10 @@ class Id(Property):
     Represents an identifier of a resource.
     """
 
-    def __init__(self, name='id', attr_name=None):
+    def __init__(self, transform=None, name='id', attr_name=None):
         super(Id, self).__init__(name=name, attr_name=attr_name)
+
+        self.transform = transform or transform_for('string')
 
 
 class Attribute(Property):

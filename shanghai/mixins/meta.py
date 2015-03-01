@@ -26,3 +26,18 @@ class MetaMixin(object):
             raise RelationshipDoesNotExist(self, name)
 
         return relationship
+
+    def property_for(self, name):
+        primary = self.get_id()
+        if primary.name == name:
+            return primary
+
+        attributes = self.get_attributes()
+        if name in attributes:
+            return attributes.get(name)
+
+        relationships = self.get_relationships()
+        if name in relationships:
+            return relationships.get(name)
+
+        return None

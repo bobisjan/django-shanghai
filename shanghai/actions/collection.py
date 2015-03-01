@@ -6,11 +6,15 @@ from shanghai.exceptions import TypeConflictError
 class CollectionMixin(object):
 
     def get_collection(self):
+        filters = self.filter_parameters()
         order_by = self.sort_parameters()
         pagination = self.pagination_parameters()
 
         collection = self.fetch_collection()
         links = dict()
+
+        if len(filters):
+            collection = self.filter_collection(collection, **filters)
 
         if len(order_by):
             collection = self.sort_collection(collection, *order_by)

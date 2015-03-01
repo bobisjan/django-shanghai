@@ -52,6 +52,22 @@ class GetRelatedHasManyTestCase(TestCase):
             self.assertEqual(links.get('self'), 'http://testserver/api/articles/' + article.get('id'))
 
 
+class GetFilteredRelatedTestCase(TestCase):
+
+    def test_app_should_respond_with_filtered_tags(self):
+        response = self.client.get('/api/articles/1/tags?filter[name]=aaa')
+
+        self.assertEqual(response.status_code, 200)
+
+        tags = response.document.get('data')
+
+        self.assertIsNotNone(tags)
+        self.assertIsInstance(tags, list)
+        self.assertEqual(len(tags), 1)
+
+        self.assertEqual(tags[0].get('name'), 'aaa')
+
+
 class GetSortedRelatedTestCase(TestCase):
 
     def test_app_should_respond_with_sorted_tags_asc(self):
