@@ -4,20 +4,16 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from shanghai.http import HttpResponseNotImplemented
-from shanghai.utils import is_iterable, setattrs
+from shanghai.utils import setattrs
 
 
 class DispatcherMixin(object):
 
-    @staticmethod
-    def action_not_implemented():
+    def action_not_implemented(self):
         return HttpResponseNotImplemented()
 
-    @staticmethod
-    def resolve_pk(pk):
-        if pk is None or not len(pk):
-            return None
-        return pk
+    def resolve_pk(self, pk):
+        return self.get_id().transform.deserialize(pk)
 
     def resolve_parameters(self):
         pk = self.kwargs.get('pk', None)
