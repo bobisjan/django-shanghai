@@ -74,7 +74,7 @@ class ModelLinkedMixin(LinkedMixin):
         linked_data = self.resolve_linked_input()
         linked_resource = self.linked_resource()
 
-        pks = linked_data.get('ids')  # TODO extract ids via serializer
+        pks = linked_data.get('ids')
 
         count = related_manager.all().filter(pk__in=pks).count()
         if count > 0:
@@ -87,7 +87,7 @@ class ModelLinkedMixin(LinkedMixin):
         linked_obj = None
 
         if linked_data:
-            pk = linked_data.get('id')  # TODO extract id via serializer
+            pk = linked_data.get('id')
             linked_obj = linked_resource.fetch_object(pk)
 
         relationship.set_to(obj, linked_obj)
@@ -95,7 +95,7 @@ class ModelLinkedMixin(LinkedMixin):
 
     def put_linked_has_many(self, obj, relationship, linked_resource, linked_data):
         linked_objects = list()
-        pks = linked_data.get('ids')  # TODO extract ids via serializer
+        pks = linked_data.get('ids')
 
         if len(pks):
             linked_objects = linked_resource._get_objects_data(pks)
@@ -105,7 +105,7 @@ class ModelLinkedMixin(LinkedMixin):
     def delete_linked_has_many(self, obj, data, relationship):
         related_manager = relationship.get_from(obj)
         resource = self.linked_resource()
-        pks = data.get('ids')  # TODO extract ids via serializer
+        pks = data.get('ids')
         linked_objects = resource._get_objects_data(pks)
 
         related_manager.remove(*linked_objects)

@@ -165,7 +165,7 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                 linked_obj = None
 
                 if linked_data:
-                    pk = linked_data.get('id')  # TODO extract id via serializer
+                    pk = linked_data.get('id')
                     linked_obj = linked_resource.fetch_object(pk)
 
                 relationship.set_to(obj, linked_obj)
@@ -187,7 +187,7 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
 
             if relationship.is_has_many():
                 related_manager = relationship.get_from(obj)
-                pks = linked_data.get('ids')  # TODO extract ids via serializer
+                pks = linked_data.get('ids')
                 linked_objects = list()
 
                 if len(pks):
