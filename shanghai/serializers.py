@@ -208,9 +208,8 @@ class Serializer(object):
 
         value = data.get(key, None)
 
-        # TODO de-normalize `id`
         if value:
-            obj[pk.name] = value
+            obj[pk.name] = pk.transform.deserialize(value)
 
     def extract_type(self, obj, data):
         if 'type' not in data:
@@ -241,11 +240,7 @@ class Serializer(object):
 
     def unpack(self, data):
         pk = self.unpack_id(data)
-        links = dict()
-
-        if 'links' in data:
-            links = data.get('links')
-            del data['links']
+        links = self.unpack_links(data)
 
         if 'type' in data:
             del data['type']
@@ -255,13 +250,32 @@ class Serializer(object):
         return pk, attributes, links
 
     def unpack_id(self, data):
-        id = self.resource.get_id()
-        key = self.key_for_id(id)
+        pk = self.resource.get_id()
+        key = self.key_for_id(pk)
 
-        pk = None
+        value = None
 
         if key in data:
-            pk = data[key]
+            value = data[key]
             del data[key]
 
-        return pk
+        return pk.transform.deserialize(value)
+
+    def unpack_links(self, data):
+        links = dict()
+
+        if 'links' in data:
+            links = data['links']
+            del data['links']
+
+        for key, value in links.items():
+            relationship = self.resource.relationship_for(key)
+            resource = self.resource_for_relationship(relationship)
+            pk = resource.get_id()
+
+            if 'id' in value and value['id']:
+                value['id'] = pk.transform.deserialize(value['id'])
+            elif 'ids' in value and value['ids']:
+                value['ids'] = list(map(pk.transform.deserialize, value['ids']))
+
+        return links
