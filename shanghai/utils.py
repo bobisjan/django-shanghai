@@ -34,6 +34,8 @@ def resource_for_model(model, api=shanghai.api):
 
 
 field_to_kind = {
+    'django.db.models.fields.AutoField': 'integer',
+    'django.db.models.fields.related.OneToOneField': 'integer',
     'django.db.models.fields.BooleanField': 'boolean',
     'django.db.models.fields.DecimalField': 'decimal',
     'django.db.models.fields.SmallIntegerField': 'integer',

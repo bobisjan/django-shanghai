@@ -12,7 +12,7 @@ from shanghai.serializers import Serializer
 
 class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
                FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin,
-               SortMixin, PaginationMixin, object):
+               FilterMixin, SortMixin, PaginationMixin, object):
     """
     A base class for all resources.
     """
@@ -122,7 +122,8 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
 
 class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                     ModelLinkedMixin, ModelRelatedMixin, ModelFetcherMixin,
-                    ModelSortMixin, ModelPaginationMixin, Resource):
+                    ModelFilterMixin, ModelSortMixin, ModelPaginationMixin,
+                    Resource):
     """
     A model based resource.
     """
@@ -165,7 +166,7 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
 
                 if linked_data:
                     pk = linked_data.get('id')  # TODO extract id via serializer
-                    linked_obj = linked_resource.get_object_data(pk)
+                    linked_obj = linked_resource.fetch_object(pk)
 
                 relationship.set_to(obj, linked_obj)
                 update_fields.append(key)

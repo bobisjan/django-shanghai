@@ -13,11 +13,11 @@ class LinkedMixin(object):
 
         return self.api.resource_for(relationship.target)
 
-    def linked_input_data(self):
+    def resolve_linked_input(self):
         return self.input.get('data')
 
     def post_linked(self):
-        obj = self.get_object_data()
+        obj = self.fetch_object()
         relationship = self.linked_relationship()
 
         if not relationship.is_has_many():
@@ -31,10 +31,10 @@ class LinkedMixin(object):
         raise NotImplementedError()
 
     def put_linked(self):
-        obj = self.get_object_data()
+        obj = self.fetch_object()
         relationship = self.linked_relationship()
         linked_resource = self.linked_resource()
-        linked_data = self.linked_input_data()
+        linked_data = self.resolve_linked_input()
 
         if relationship.is_belongs_to():
             self.put_linked_belongs_to(obj, relationship, linked_resource, linked_data)
@@ -52,8 +52,8 @@ class LinkedMixin(object):
         raise NotImplementedError()
 
     def delete_linked(self):
-        obj = self.get_object_data()
-        data = self.linked_input_data()
+        obj = self.fetch_object()
+        data = self.resolve_linked_input()
         relationship = self.linked_relationship()
 
         if not relationship.is_has_many():
@@ -71,7 +71,7 @@ class ModelLinkedMixin(LinkedMixin):
 
     def post_linked_has_many(self, obj, relationship):
         related_manager = relationship.get_from(obj)
-        linked_data = self.linked_input_data()
+        linked_data = self.resolve_linked_input()
         linked_resource = self.linked_resource()
 
         pks = linked_data.get('ids')  # TODO extract ids via serializer
@@ -88,7 +88,7 @@ class ModelLinkedMixin(LinkedMixin):
 
         if linked_data:
             pk = linked_data.get('id')  # TODO extract id via serializer
-            linked_obj = linked_resource.get_object_data(pk)
+            linked_obj = linked_resource.fetch_object(pk)
 
         relationship.set_to(obj, linked_obj)
         obj.save(update_fields=[relationship.name])
