@@ -35,7 +35,8 @@ class RelationshipDoesNotExist(NotFoundError):
         self.relationship = relationship
 
     def __str__(self):
-        return 'Relationship `{1}` does not exist on resource `{0}`.'.format(self.resource, self.relationship)
+        message = 'Relationship `{1}` does not exist on resource `{0}`.'
+        return message.format(self.resource, self.relationship)
 
 
 class LinkedResourceAlreadyExists(ConflictError):
@@ -47,8 +48,8 @@ class LinkedResourceAlreadyExists(ConflictError):
         self.link = link
 
     def __str__(self):
-        return 'Relationship `{2}` on resource `{1}` of `{0}` already has been set with `{3}`.'.format(
-            self.resource, self.object, self.relationship, self.link)
+        message = 'Relationship `{2}` on resource `{1}` of `{0}` already has been set with `{3}`.'
+        return message.format(self.resource, self.object, self.relationship, self.link)
 
 
 class TypeConflictError(ConflictError):
@@ -58,7 +59,8 @@ class TypeConflictError(ConflictError):
         self.data_type = data_type
 
     def __str__(self):
-        return 'Data type `{1}` does not match with resource type `{0}`.'.format(self.resource_type, self.data_type)
+        message = 'Data type `{1}` does not match with resource type `{0}`.'
+        return message.format(self.resource_type, self.data_type)
 
 
 class ModelValidationError(BaseError):

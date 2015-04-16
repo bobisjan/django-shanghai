@@ -26,7 +26,8 @@ def filter_for(resource, path):
     suffix = inflection.underscore(suffix)
 
     if suffix not in _filters:
-        raise ForbiddenError('Unknown filter suffix `{0}` for key `{1}`.'.format(suffix, key))
+        message = 'Unknown filter suffix `{0}` for key `{1}`.'
+        raise ForbiddenError(message.format(suffix, key))
 
     filter = _filters[suffix]
     return filter(resource, key)
@@ -65,7 +66,8 @@ class Filter(object):
                 resource = resource.api.resource_for(property.target)
                 continue
 
-        raise ForbiddenError('Unknown property for key {0} on resource {1}'.format(self.key, self.resource))
+        message = 'Unknown property for key {0} on resource {1}'
+        raise ForbiddenError(message.format(self.key, self.resource))
 
     def normalize_value(self, value):
         transform = self.property.transform
