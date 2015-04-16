@@ -11,10 +11,9 @@ class Inspector(object):
 
     def __init__(self, resource):
         self.resource = resource
-
-        setattr(self.resource, 'id', Id())
-        setattr(self.resource, 'attributes', dict())
-        setattr(self.resource, 'relationships', dict())
+        setattr(self.resource, '_id', Id())
+        setattr(self.resource, '_attributes', dict())
+        setattr(self.resource, '_relationships', dict())
 
     def inspect_id(self):
         pass
@@ -45,10 +44,10 @@ class MetaInspector(Inspector):
         if not _id:
             _id = Id()
 
-        setattr(self.resource, 'id', _id)
+        setattr(self.resource, '_id', _id)
 
     def inspect_attributes(self):
-        attributes = getattr(self.resource, 'attributes')
+        attributes = getattr(self.resource, '_attributes')
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
@@ -60,7 +59,7 @@ class MetaInspector(Inspector):
                 attributes[value.name] = value
 
     def inspect_belongs_to(self):
-        relationships = getattr(self.resource, 'relationships')
+        relationships = getattr(self.resource, '_relationships')
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
@@ -72,7 +71,7 @@ class MetaInspector(Inspector):
                 relationships[value.name] = value
 
     def inspect_has_many(self):
-        relationships = getattr(self.resource, 'relationships')
+        relationships = getattr(self.resource, '_relationships')
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
@@ -88,7 +87,6 @@ class ModelInspector(Inspector):
 
     def get_meta(self):
         model = getattr(self.resource, 'model')
-
         return getattr(model, '_meta')
 
     def get_all_model_field_names(self):
@@ -166,10 +164,10 @@ class ModelInspector(Inspector):
                 _id = Id(transform=transform, attr_name=attr_name)
                 break
 
-        setattr(self.resource, 'id', _id)
+        setattr(self.resource, '_id', _id)
 
     def inspect_attributes(self):
-        attributes = getattr(self.resource, 'attributes')
+        attributes = getattr(self.resource, '_attributes')
 
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
@@ -180,7 +178,7 @@ class ModelInspector(Inspector):
                     attributes[attribute.name] = attribute
 
     def inspect_belongs_to(self):
-        relationships = getattr(self.resource, 'relationships')
+        relationships = getattr(self.resource, '_relationships')
 
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
@@ -210,20 +208,20 @@ class ModelInspector(Inspector):
         resource = resource_for_model(field.rel.to)
 
         if resource:
-            relationships = getattr(self.resource, 'relationships')
+            relationships = getattr(self.resource, '_relationships')
             inverse = field.rel.related_name
 
             relationship = BelongsTo(target=resource.name, inverse=inverse, name=field_name)
             relationships[relationship.name] = relationship
 
-            inverse_relationships = getattr(resource, 'relationships')
+            inverse_relationships = getattr(resource, '_relationships')
 
             inverse_relationship = BelongsTo(target=self.resource.name, inverse=field_name, name=inverse)
             inverse_relationships[inverse_relationship.name] = inverse_relationship
 
     def add_has_many_from_belongs_to(self, field_name, field):
         resource = resource_for_model(field.rel.to)
-        relationships = getattr(resource, 'relationships')
+        relationships = getattr(resource, '_relationships')
         name = field.rel.related_name
 
         relationship = HasMany(target=self.resource.name, inverse=field_name, name=name)
@@ -240,12 +238,12 @@ class ModelInspector(Inspector):
         if not resource:
             return
 
-        relationships = getattr(self.resource, 'relationships')
+        relationships = getattr(self.resource, '_relationships')
         relationship = HasMany(target=resource.name, inverse=field.rel.related_name, name=field_name)
         relationships[relationship.name] = relationship
 
         # add `has_many` on the inverse resource
 
-        inverse_relationships = getattr(resource, 'relationships')
+        inverse_relationships = getattr(resource, '_relationships')
         inverse_relationship = HasMany(target=self.resource.name, inverse=field_name, name=field.rel.related_name)
         inverse_relationships[inverse_relationship.name] = inverse_relationship
