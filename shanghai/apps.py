@@ -7,6 +7,7 @@ class Shanghai(object):
     """
 
     name = 'shanghai'
+    verbose_name = 'Shanghai'
 
     def __init__(self):
         self._registry = dict()
@@ -17,7 +18,6 @@ class Shanghai(object):
 
         :param resource: A resource class to register
         """
-
         instance = resource(self)
         self._registry[instance.name] = instance
 
@@ -28,24 +28,16 @@ class Shanghai(object):
         :param name: Name of the resource
         :return: Resource or `None` if not found
         """
-
         return self._registry.get(name, None)
 
     def inspect(self):
+        for resource in self._registry.values():
+            resource.inspector.inspect_id()
+            resource.inspector.inspect_attributes()
+            resource.inspector.inspect_belongs_to()
 
-        for name in self._registry.keys():
-            resource = self._registry.get(name)
-            inspector = resource.inspector
-
-            inspector.inspect_id()
-            inspector.inspect_attributes()
-            inspector.inspect_belongs_to()
-
-        for name in self._registry.keys():
-            resource = self._registry.get(name)
-            inspector = resource.inspector
-
-            inspector.inspect_has_many()
+        for resource in self._registry.values():
+            resource.inspector.inspect_has_many()
 
     def get_urls(self):
         """
@@ -73,8 +65,8 @@ class ShanghaiConfig(AppConfig):
     A default configuration for a Shanghai application.
     """
 
-    name = 'shanghai'
-    verbose_name = 'Shanghai'
+    name = Shanghai.name
+    verbose_name = Shanghai.verbose_name
 
     def ready(self):
         super(ShanghaiConfig, self).ready()
