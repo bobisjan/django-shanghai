@@ -196,3 +196,6 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                 relationship.set_to(obj, linked_objects)
 
         return obj
+
+    def remove_object(self, obj):
+        obj.delete()

@@ -33,7 +33,6 @@ class CollectionMixin(object):
             raise TypeConflictError(self.type, data.get('type'))
 
         obj = self.post_collection_object(data)
-
         return self.response_with_location(obj)
 
     def post_collection_object(self, data):

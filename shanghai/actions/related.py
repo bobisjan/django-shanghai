@@ -22,7 +22,6 @@ class RelatedMixin(object):
 
     def related_serializer(self):
         resource = self.related_resource()
-
         return resource.serializer
 
     def related_relationship(self):
@@ -34,7 +33,6 @@ class RelatedMixin(object):
 
         resource = self.api.resource_for(relationship.target)
         setattr(resource, 'request', self.request)
-
         return resource
 
 

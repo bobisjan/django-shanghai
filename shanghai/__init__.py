@@ -1,14 +1,13 @@
 from django.utils.module_loading import autodiscover_modules
 
-from shanghai.conf import settings
 from shanghai.apps import Shanghai
+from shanghai.conf import settings
 
 
 def autodiscover():
     """
     Automatically discovers `resources` modules in `INSTALLED_APPS`.
     """
-
     discover(api)
 
 
@@ -26,7 +25,6 @@ def autoinspect():
     """
     Automatically inspects registered resources.
     """
-
     inspect(api)
 
 
@@ -35,7 +33,6 @@ def inspect(app):
 
 
 default_app_config = 'shanghai.apps.ShanghaiConfig'
-
 
 # Register a globally available instance of the Shanghai application.
 api = Shanghai()

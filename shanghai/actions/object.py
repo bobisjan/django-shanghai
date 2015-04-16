@@ -8,7 +8,6 @@ class ObjectMixin(object):
 
     def get_object(self):
         obj = self.fetch_object()
-
         return self.response(obj)
 
     def put_object(self):
@@ -29,9 +28,7 @@ class ObjectMixin(object):
 
     def delete_object(self):
         obj = self.fetch_object()
-
         self.delete_object_data(obj)
-
         return HttpResponseNoContent()
 
     def delete_object_data(self, obj):
@@ -48,4 +45,4 @@ class ModelObjectMixin(ObjectMixin):
             self.save_object(obj, data)
 
     def delete_object_data(self, obj):
-        obj.delete()
+        self.remove_object(obj)
