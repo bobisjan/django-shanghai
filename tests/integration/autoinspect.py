@@ -43,7 +43,7 @@ class ModelInspectionTesCase(TestCase):
 
     def _test_for_attributes(self, resource_name, attribute_dict):
         resource = self.api.resource_for(resource_name)
-        attributes = resource.get_attributes()
+        attributes = resource.attributes()
 
         for attr_dict in attribute_dict:
             attr = attributes.get(attr_dict['name'], None)

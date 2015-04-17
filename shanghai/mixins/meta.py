@@ -6,11 +6,11 @@ class MetaMixin(object):
     def primary_key(self):
         return getattr(self, '_primary_key')
 
-    def get_attributes(self):
+    def attributes(self):
         return getattr(self, '_attributes')
 
     def attribute_for(self, name):
-        attributes = self.get_attributes()
+        attributes = self.attributes()
         return attributes.get(name)
 
     def get_relationships(self):
@@ -29,7 +29,7 @@ class MetaMixin(object):
         if primary.name == name:
             return primary
 
-        attributes = self.get_attributes()
+        attributes = self.attributes()
         if name in attributes:
             return attributes.get(name)
 

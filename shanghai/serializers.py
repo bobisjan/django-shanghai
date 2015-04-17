@@ -41,7 +41,7 @@ class Serializer(object):
         self.serialize_id(obj, data, self.resource.primary_key())
         self.serialize_type(obj, data)
 
-        attributes = self.resource.get_attributes()
+        attributes = self.resource.attributes()
         for key in attributes.keys():
             self.serialize_attribute(obj, data, attributes.get(key))
 
@@ -186,7 +186,7 @@ class Serializer(object):
 
         self.extract_type(obj, data)
 
-        attributes = self.resource.get_attributes()
+        attributes = self.resource.attributes()
         for attribute in attributes.values():
             self.extract_attribute(obj, data, attribute)
 
