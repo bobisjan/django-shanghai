@@ -38,7 +38,7 @@ class Serializer(object):
     def serialize_object(self, obj):
         data = dict()
 
-        self.serialize_id(obj, data, self.resource.get_id())
+        self.serialize_id(obj, data, self.resource.primary_key())
         self.serialize_type(obj, data)
 
         attributes = self.resource.get_attributes()
@@ -63,7 +63,7 @@ class Serializer(object):
         data['type'] = self.key_for_type(self.resource.type)
 
     def serialize_self_link(self, obj, data, links, link=None, related=None):
-        primary_key = self.resource.get_id()
+        primary_key = self.resource.primary_key()
         key = self.key_for_id(primary_key)
         pk = data[key]
 
@@ -105,8 +105,8 @@ class Serializer(object):
         if not related:
             return None
 
-        _id = resource.get_id()
-        pk = resource.fetch_id(related, _id)
+        primary_key = resource.primary_key()
+        pk = resource.fetch_id(related, primary_key)
 
         link = dict(
             type=self.key_for_type(resource.type),
@@ -119,13 +119,13 @@ class Serializer(object):
         return link
 
     def link_for_has_many(self, obj, data, related, resource, relationship):
-        pk = resource.get_id()
+        primary_key = resource.primary_key()
         pks = list()
 
         for obj in related:
-            _pk = pk.get_from(obj)
-            _pk = self.normalize_id(_pk)
-            pks.append(_pk)
+            pk = primary_key.get_from(obj)
+            pk = self.normalize_id(pk)
+            pks.append(pk)
 
         link = dict(
             type=self.key_for_type(resource.type),
@@ -181,8 +181,8 @@ class Serializer(object):
     def extract_object(self, data):
         obj = dict()
 
-        _id = self.resource.get_id()
-        self.extract_id(obj, data, _id)
+        primary_key = self.resource.primary_key()
+        self.extract_id(obj, data, primary_key)
 
         self.extract_type(obj, data)
 
@@ -230,7 +230,7 @@ class Serializer(object):
     def extract_relationship(self, obj, data, relationship):
         resource = self.resource_for_relationship(relationship)
         key = self.key_for_relationship(relationship)
-        pk = resource.get_id()
+        primary_key = resource.primary_key()
 
         if key not in data:
             return
@@ -238,8 +238,8 @@ class Serializer(object):
         value = data.get(key)
 
         if 'id' in value and value['id']:
-            value['id'] = pk.transform.deserialize(value['id'])
+            value['id'] = primary_key.transform.deserialize(value['id'])
         elif 'ids' in value and value['ids']:
-            value['ids'] = list(map(pk.transform.deserialize, value['ids']))
+            value['ids'] = list(map(primary_key.transform.deserialize, value['ids']))
 
         obj[relationship.name] = value

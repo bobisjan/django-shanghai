@@ -13,7 +13,7 @@ class DispatcherMixin(object):
         return HttpResponseNotImplemented()
 
     def resolve_pk(self, pk):
-        return self.get_id().transform.deserialize(pk)
+        return self.primary_key().transform.deserialize(pk)
 
     def resolve_parameters(self):
         pk = self.kwargs.get('pk', None)

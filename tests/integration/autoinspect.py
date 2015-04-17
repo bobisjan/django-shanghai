@@ -1,16 +1,16 @@
 from tests.test_cases import TestCase
 
-from shanghai.properties import Id, Attribute, BelongsTo, HasMany
+from shanghai.properties import PrimaryKey, Attribute, BelongsTo, HasMany
 
 
 class ModelInspectionTesCase(TestCase):
 
-    def test_model_resource_should_have_id(self):
-        self._test_for_id('articles')
-        self._test_for_id('categories')
-        self._test_for_id('extended_articles')
-        self._test_for_id('extended_tags')
-        self._test_for_id('tags')
+    def test_model_resource_should_have_primary_key(self):
+        self._test_for_primary_key('articles')
+        self._test_for_primary_key('categories')
+        self._test_for_primary_key('extended_articles')
+        self._test_for_primary_key('extended_tags')
+        self._test_for_primary_key('tags')
 
     def test_model_resource_should_have_attributes(self):
         self._test_for_attributes('articles', (
@@ -36,10 +36,10 @@ class ModelInspectionTesCase(TestCase):
             'extended_tag': BelongsTo
         })
 
-    def _test_for_id(self, resource_name):
+    def _test_for_primary_key(self, resource_name):
         resource = self.api.resource_for(resource_name)
 
-        self.assertIsInstance(resource.get_id(), Id)
+        self.assertIsInstance(resource.primary_key(), PrimaryKey)
 
     def _test_for_attributes(self, resource_name, attribute_dict):
         resource = self.api.resource_for(resource_name)

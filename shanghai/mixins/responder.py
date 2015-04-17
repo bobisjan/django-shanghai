@@ -29,7 +29,7 @@ class ResponderMixin(object):
             object_or_iterable = [object_or_iterable]
 
         pks = list()
-        _id = self.get_id()
+        _id = self.primary_key()
 
         for obj in object_or_iterable:
             pk = _id.get_from(obj)

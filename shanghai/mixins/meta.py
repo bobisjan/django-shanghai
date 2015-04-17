@@ -3,8 +3,8 @@ from shanghai.exceptions import RelationshipDoesNotExist
 
 class MetaMixin(object):
 
-    def get_id(self):
-        return getattr(self, '_id')
+    def primary_key(self):
+        return getattr(self, '_primary_key')
 
     def get_attributes(self):
         return getattr(self, '_attributes')
@@ -25,7 +25,7 @@ class MetaMixin(object):
         return relationship
 
     def property_for(self, name):
-        primary = self.get_id()
+        primary = self.primary_key()
         if primary.name == name:
             return primary
 

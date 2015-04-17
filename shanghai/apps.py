@@ -32,7 +32,7 @@ class Shanghai(object):
 
     def inspect(self):
         for resource in self._registry.values():
-            resource.inspector.inspect_id()
+            resource.inspector.inspect_primary_key()
             resource.inspector.inspect_attributes()
             resource.inspector.inspect_belongs_to()
 

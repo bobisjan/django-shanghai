@@ -1,7 +1,7 @@
 import inflection
 
 from shanghai.exceptions import ForbiddenError
-from shanghai.properties import Id, Attribute, Relationship
+from shanghai.properties import PrimaryKey, Attribute, Relationship
 from shanghai.transforms import transform_for
 
 
@@ -59,7 +59,7 @@ class Filter(object):
         for part in parts:
             property = resource.property_for(part)
 
-            if isinstance(property, Id) or isinstance(property, Attribute):
+            if isinstance(property, PrimaryKey) or isinstance(property, Attribute):
                 return property
 
             if isinstance(property, Relationship):

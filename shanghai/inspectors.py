@@ -2,7 +2,7 @@ import inspect
 
 from django.db import models
 
-from shanghai.properties import Id, Attribute, BelongsTo, HasMany
+from shanghai.properties import PrimaryKey, Attribute, BelongsTo, HasMany
 from shanghai.transforms import transform_for
 from shanghai.utils import resource_for_model, kind_of_field
 
@@ -11,11 +11,11 @@ class Inspector(object):
 
     def __init__(self, resource):
         self.resource = resource
-        setattr(self.resource, '_id', Id())
+        setattr(self.resource, '_primary_key', PrimaryKey())
         setattr(self.resource, '_attributes', dict())
         setattr(self.resource, '_relationships', dict())
 
-    def inspect_id(self):
+    def inspect_primary_key(self):
         pass
 
     def inspect_attributes(self):
@@ -33,18 +33,18 @@ class MetaInspector(Inspector):
     def get_meta(self):
         return getattr(self.resource, 'Meta')
 
-    def inspect_id(self):
-        _id = None
+    def inspect_primary_key(self):
+        primary_key = None
         meta = self.get_meta()
 
         for name, value in inspect.getmembers(meta):
-            if isinstance(value, Id):
-                _id = value
+            if isinstance(value, PrimaryKey):
+                primary_key = value
 
-        if not _id:
-            _id = Id()
+        if not primary_key:
+            primary_key = PrimaryKey()
 
-        setattr(self.resource, '_id', _id)
+        setattr(self.resource, '_primary_key', primary_key)
 
     def inspect_attributes(self):
         attributes = getattr(self.resource, '_attributes')
@@ -145,8 +145,8 @@ class ModelInspector(Inspector):
 
             return BelongsTo(target=resource.name, inverse=inverse, name=field_name)
 
-    def inspect_id(self):
-        _id = None
+    def inspect_primary_key(self):
+        primary_key = None
 
         for field_name in self.get_all_model_field_names():
             field = self.get_model_field(field_name)
@@ -161,10 +161,10 @@ class ModelInspector(Inspector):
                 kind = kind_of_field(field)
                 transform = transform_for(kind)
 
-                _id = Id(transform=transform, attr_name=attr_name)
+                primary_key = PrimaryKey(transform=transform, attr_name=attr_name)
                 break
 
-        setattr(self.resource, '_id', _id)
+        setattr(self.resource, '_primary_key', primary_key)
 
     def inspect_attributes(self):
         attributes = getattr(self.resource, '_attributes')

@@ -24,8 +24,8 @@ class InspectorTestCase(TestCase):
         self.api.inspect()
 
     def test_resource_should_have_id(self):
-        self.assertIsNotNone(self.article.get_id())
-        self.assertIsNotNone(self.category.get_id())
+        self.assertIsNotNone(self.article.primary_key())
+        self.assertIsNotNone(self.category.primary_key())
 
     def test_resource_should_have_attributes(self):
         self.assertTrue('title' in self.article.get_attributes())
@@ -56,8 +56,8 @@ class ModelInspectorTestCase(TestCase):
         self.api.inspect()
 
     def test_resource_should_have_id(self):
-        self.assertIsNotNone(self.article.get_id())
-        self.assertIsNotNone(self.category.get_id())
+        self.assertIsNotNone(self.article.primary_key())
+        self.assertIsNotNone(self.category.primary_key())
 
     def test_resource_should_have_attributes(self):
         self.assertTrue('title' in self.article.get_attributes())

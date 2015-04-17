@@ -1,5 +1,5 @@
 from shanghai.resources import Resource
-from shanghai.properties import Id, Attribute, BelongsTo, HasMany
+from shanghai.properties import PrimaryKey, Attribute, BelongsTo, HasMany
 
 
 class ArticleResource(Resource):
@@ -13,6 +13,6 @@ class ArticleResource(Resource):
 class CategoryResource(Resource):
 
     class Meta:
-        id = Id()
+        id = PrimaryKey()
         title = Attribute('string')
         articles = HasMany('articles', inverse='category')
