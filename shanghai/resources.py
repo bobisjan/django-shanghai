@@ -153,11 +153,11 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
         links = data.get('links', dict())
         update_fields = list()
 
-        for key in self.attributes().keys():
+        for key, attribute in self.attributes().items():
             if key not in data:
                 continue
 
-            setattr(obj, key, data.get(key))
+            attribute.set_to(obj, data.get(key))
             update_fields.append(key)
 
         for key, relationship in self.relationships().items():

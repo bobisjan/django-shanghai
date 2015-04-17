@@ -53,9 +53,10 @@ class Serializer(object):
 
         return data
 
-    def serialize_id(self, obj, data, pk):
-        key = self.key_for_id(pk)
-        value = self.resource.fetch_id(obj, pk)
+    def serialize_id(self, obj, data, primary_key):
+        key = self.key_for_primary_key(primary_key.name)
+        value = self.resource.fetch_id(obj, primary_key)
+        value = primary_key.transform.serialize(value)
         value = self.normalize_id(value)
         data[key] = value
 
@@ -64,24 +65,20 @@ class Serializer(object):
 
     def serialize_self_link(self, obj, data, links, link=None, related=None):
         primary_key = self.resource.primary_key()
-        key = self.key_for_id(primary_key)
+        key = self.key_for_primary_key(primary_key.name)
         pk = data[key]
 
         if related:
-            related = self.key_for_relationship(related)
+            related = self.key_for_relationship(related.name)
             links['resource'] = self.resource.absolute_reverse_url(pk=pk, related=related)
         elif link:
-            link = self.key_for_relationship(link)
+            link = self.key_for_relationship(link.name)
             links['self'] = self.resource.absolute_reverse_url(pk=pk, link=link)
         else:
             links['self'] = self.resource.absolute_reverse_url(pk=pk)
 
-    @staticmethod
-    def normalize_id(value):
-        return str(value)
-
     def serialize_attribute(self, obj, data, attribute):
-        key = self.key_for_attribute(attribute)
+        key = self.key_for_attribute(attribute.name)
         value = self.resource.fetch_attribute(obj, attribute)
         value = attribute.transform.serialize(value)
         data[key] = value
@@ -98,20 +95,21 @@ class Serializer(object):
             target = resource.fetch_belongs_to(obj, relationship)
             link = self.link_for_belongs_to(obj, data, target, resource, relationship)
 
-        key = self.key_for_relationship(relationship)
+        key = self.key_for_relationship(relationship.name)
         links[key] = link
 
     def link_for_belongs_to(self, obj, data, related, resource, relationship):
         if not related:
             return None
 
+        resource_type = self.key_for_type(resource.type)
         primary_key = resource.primary_key()
-        pk = resource.fetch_id(related, primary_key)
 
-        link = dict(
-            type=self.key_for_type(resource.type),
-            id=self.normalize_id(pk)
-        )
+        pk = resource.fetch_id(related, primary_key)
+        pk = primary_key.transform.serialize(pk)
+        pk = self.normalize_id(pk)
+
+        link = dict(type=resource_type, id=pk)
 
         self.serialize_self_link(obj, data, link, link=relationship)
         self.serialize_self_link(obj, data, link, related=relationship)
@@ -124,6 +122,7 @@ class Serializer(object):
 
         for obj in related:
             pk = primary_key.get_from(obj)
+            pk = primary_key.transform.serialize(pk)
             pk = self.normalize_id(pk)
             pks.append(pk)
 
@@ -145,24 +144,9 @@ class Serializer(object):
     def resource_for_relationship(self, relationship):
         return self.resource.api.resource_for(relationship.target)
 
-    def key_for_type(self, name):
-        return inflection.dasherize(name)
-
-    def key_for_id(self, pk):
-        return inflection.dasherize(pk.name)
-
-    def key_for_attribute(self, attribute):
-        return inflection.dasherize(attribute.name)
-
-    def key_for_relationship(self, relationship):
-        return inflection.dasherize(relationship.name)
-
     def extract(self, document):
         object_or_iterable = document.get('data')
-
-        data = self.extract_object_or_iterable(object_or_iterable)
-
-        return data
+        return self.extract_object_or_iterable(object_or_iterable)
 
     def extract_object_or_iterable(self, object_or_iterable):
         if isinstance(object_or_iterable, list):
@@ -175,7 +159,6 @@ class Serializer(object):
 
         for item in data:
             objects.append(self.extract_object(item))
-
         return objects
 
     def extract_object(self, data):
@@ -183,7 +166,6 @@ class Serializer(object):
 
         primary_key = self.resource.primary_key()
         self.extract_id(obj, data, primary_key)
-
         self.extract_type(obj, data)
 
         attributes = self.resource.attributes()
@@ -203,21 +185,20 @@ class Serializer(object):
 
         return obj
 
-    def extract_id(self, obj, data, pk):
-        key = self.key_for_id(pk)
+    def extract_id(self, obj, data, primary_key):
+        key = self.key_for_primary_key(primary_key.name)
         value = data.get(key, None)
 
         if value:
-            obj[pk.name] = pk.transform.deserialize(value)
+            obj[primary_key.name] = primary_key.transform.deserialize(value)
 
     def extract_type(self, obj, data):
         if 'type' not in data:
             raise ForbiddenError('Data does not contain `type`.')
-
         obj['type'] = data['type']
 
     def extract_attribute(self, obj, data, attribute):
-        key = self.key_for_attribute(attribute)
+        key = self.key_for_attribute(attribute.name)
 
         if key not in data:
             return
@@ -228,18 +209,35 @@ class Serializer(object):
         obj[attribute.name] = value
 
     def extract_relationship(self, obj, data, relationship):
-        resource = self.resource_for_relationship(relationship)
-        key = self.key_for_relationship(relationship)
-        primary_key = resource.primary_key()
+        key = self.key_for_relationship(relationship.name)
 
         if key not in data:
             return
 
+        resource = self.resource_for_relationship(relationship)
+        primary_key = resource.primary_key()
+        transform = primary_key.transform
         value = data.get(key)
 
         if 'id' in value and value['id']:
-            value['id'] = primary_key.transform.deserialize(value['id'])
+            value['id'] = transform.deserialize(value['id'])
         elif 'ids' in value and value['ids']:
-            value['ids'] = list(map(primary_key.transform.deserialize, value['ids']))
+            value['ids'] = list(map(transform.deserialize, value['ids']))
 
         obj[relationship.name] = value
+
+    @staticmethod
+    def normalize_id(value):
+        return str(value)
+
+    def key_for_primary_key(self, key):
+        return inflection.dasherize(key)
+
+    def key_for_type(self, key):
+        return inflection.dasherize(key)
+
+    def key_for_attribute(self, key):
+        return inflection.dasherize(key)
+
+    def key_for_relationship(self, key):
+        return inflection.dasherize(key)
