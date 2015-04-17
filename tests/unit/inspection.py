@@ -24,17 +24,17 @@ class InspectorTestCase(TestCase):
         self.api.inspect()
 
     def test_resource_should_have_id(self):
-        self.assertIsNotNone(self.article.get_id())
-        self.assertIsNotNone(self.category.get_id())
+        self.assertIsNotNone(self.article.primary_key())
+        self.assertIsNotNone(self.category.primary_key())
 
     def test_resource_should_have_attributes(self):
-        self.assertTrue('title' in self.article.get_attributes())
-        self.assertTrue('perex' in self.article.get_attributes())
-        self.assertTrue('title' in self.category.get_attributes())
+        self.assertTrue('title' in self.article.attributes())
+        self.assertTrue('perex' in self.article.attributes())
+        self.assertTrue('title' in self.category.attributes())
 
     def test_resource_should_have_relationships(self):
-        self.assertTrue('category' in self.article.get_relationships())
-        self.assertTrue('articles' in self.category.get_relationships())
+        self.assertTrue('category' in self.article.relationships())
+        self.assertTrue('articles' in self.category.relationships())
 
 
 class ModelInspectorTestCase(TestCase):
@@ -56,14 +56,14 @@ class ModelInspectorTestCase(TestCase):
         self.api.inspect()
 
     def test_resource_should_have_id(self):
-        self.assertIsNotNone(self.article.get_id())
-        self.assertIsNotNone(self.category.get_id())
+        self.assertIsNotNone(self.article.primary_key())
+        self.assertIsNotNone(self.category.primary_key())
 
     def test_resource_should_have_attributes(self):
-        self.assertTrue('title' in self.article.get_attributes())
-        self.assertTrue('perex' in self.article.get_attributes())
-        self.assertTrue('title' in self.category.get_attributes())
+        self.assertTrue('title' in self.article.attributes())
+        self.assertTrue('perex' in self.article.attributes())
+        self.assertTrue('title' in self.category.attributes())
 
     def test_resource_should_have_relationships(self):
-        self.assertTrue('category' in self.article.get_relationships())
-        self.assertTrue('articles' in self.category.get_relationships())
+        self.assertTrue('category' in self.article.relationships())
+        self.assertTrue('articles' in self.category.relationships())

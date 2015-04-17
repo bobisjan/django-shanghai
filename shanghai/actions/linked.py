@@ -24,7 +24,6 @@ class LinkedMixin(object):
             raise ForbiddenError()
 
         self.post_linked_has_many(obj, relationship)
-
         return HttpResponseNoContent()
 
     def post_linked_has_many(self, obj, relationship):
@@ -60,7 +59,6 @@ class LinkedMixin(object):
             raise ForbiddenError()
 
         self.delete_linked_has_many(obj, data, relationship)
-
         return HttpResponseNoContent()
 
     def delete_linked_has_many(self, obj, data, relationship):

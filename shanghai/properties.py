@@ -24,14 +24,13 @@ class Property(object):
         return self.name
 
 
-class Id(Property):
+class PrimaryKey(Property):
     """
     Represents an identifier of a resource.
     """
 
     def __init__(self, transform=None, name='id', attr_name=None):
-        super(Id, self).__init__(name=name, attr_name=attr_name)
-
+        super(PrimaryKey, self).__init__(name=name, attr_name=attr_name)
         self.transform = transform or transform_for('string')
 
 
@@ -42,7 +41,6 @@ class Attribute(Property):
 
     def __init__(self, kind, transform=None, name=None, attr_name=None):
         super(Attribute, self).__init__(name=name, attr_name=attr_name)
-
         self.kind = kind
         self.transform = transform or transform_for(self.kind)
 

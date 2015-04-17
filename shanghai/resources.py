@@ -150,16 +150,22 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
         return self.model()
 
     def save_object(self, obj, data):
-        pk, attributes, links = self.serializer.unpack(data)
+        links = data.get('links', dict())
         update_fields = list()
 
-        for key, value in attributes.items():
-            setattr(obj, key, value)
+        for key, attribute in self.attributes().items():
+            if key not in data:
+                continue
+
+            attribute.set_to(obj, data.get(key))
             update_fields.append(key)
 
-        for key, linked_data in links.items():
-            relationship = self.relationship_for(key)
+        for key, relationship in self.relationships().items():
+            if key not in links:
+                continue
+
             linked_resource = self.linked_resource(relationship)
+            linked_data = links.get(key)
 
             if relationship.is_belongs_to():
                 linked_obj = None
@@ -181,9 +187,12 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
         else:
             obj.save()
 
-        for key, linked_data in links.items():
-            relationship = self.relationship_for(key)
-            resource = self.linked_resource(relationship)
+        for key, relationship in self.relationships().items():
+            if key not in links:
+                continue
+
+            linked_resource = self.linked_resource(relationship)
+            linked_data = links.get(key)
 
             if relationship.is_has_many():
                 related_manager = relationship.get_from(obj)
@@ -191,8 +200,11 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                 linked_objects = list()
 
                 if len(pks):
-                    linked_objects = resource._get_objects_data(pks)
+                    linked_objects = linked_resource._get_objects_data(pks)
 
                 relationship.set_to(obj, linked_objects)
 
         return obj
+
+    def remove_object(self, obj):
+        obj.delete()
