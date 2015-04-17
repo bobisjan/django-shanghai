@@ -33,8 +33,8 @@ class InspectorTestCase(TestCase):
         self.assertTrue('title' in self.category.attributes())
 
     def test_resource_should_have_relationships(self):
-        self.assertTrue('category' in self.article.get_relationships())
-        self.assertTrue('articles' in self.category.get_relationships())
+        self.assertTrue('category' in self.article.relationships())
+        self.assertTrue('articles' in self.category.relationships())
 
 
 class ModelInspectorTestCase(TestCase):
@@ -65,5 +65,5 @@ class ModelInspectorTestCase(TestCase):
         self.assertTrue('title' in self.category.attributes())
 
     def test_resource_should_have_relationships(self):
-        self.assertTrue('category' in self.article.get_relationships())
-        self.assertTrue('articles' in self.category.get_relationships())
+        self.assertTrue('category' in self.article.relationships())
+        self.assertTrue('articles' in self.category.relationships())

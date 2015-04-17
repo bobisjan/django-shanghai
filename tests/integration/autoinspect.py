@@ -55,7 +55,7 @@ class ModelInspectionTesCase(TestCase):
 
     def _test_for_relationships(self, resource_name, relationships):
         resource = self.api.resource_for(resource_name)
-        _relationships = resource.get_relationships()
+        _relationships = resource.relationships()
 
         for name, rel_class in relationships.items():
             rel = _relationships.get(name, None)

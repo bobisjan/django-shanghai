@@ -13,11 +13,11 @@ class MetaMixin(object):
         attributes = self.attributes()
         return attributes.get(name)
 
-    def get_relationships(self):
+    def relationships(self):
         return getattr(self, '_relationships')
 
     def relationship_for(self, name):
-        relationships = self.get_relationships()
+        relationships = self.relationships()
         relationship = relationships.get(name, None)
 
         if not relationship:
@@ -33,7 +33,7 @@ class MetaMixin(object):
         if name in attributes:
             return attributes.get(name)
 
-        relationships = self.get_relationships()
+        relationships = self.relationships()
         if name in relationships:
             return relationships.get(name)
 

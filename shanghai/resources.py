@@ -160,7 +160,7 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
             setattr(obj, key, data.get(key))
             update_fields.append(key)
 
-        for key, relationship in self.get_relationships().items():
+        for key, relationship in self.relationships().items():
             if key not in links:
                 continue
 
@@ -187,7 +187,7 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
         else:
             obj.save()
 
-        for key, relationship in self.get_relationships().items():
+        for key, relationship in self.relationships().items():
             if key not in links:
                 continue
 

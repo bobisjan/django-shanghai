@@ -47,7 +47,7 @@ class Serializer(object):
 
         self.serialize_self_link(obj, data, self.links_for_data(data))
 
-        relationships = self.resource.get_relationships()
+        relationships = self.resource.relationships()
         for key in relationships.keys():
             self.serialize_relationship(obj, data, relationships.get(key))
 
@@ -194,7 +194,7 @@ class Serializer(object):
             data_links = data.get('links')
             links = dict()
 
-            relationships = self.resource.get_relationships()
+            relationships = self.resource.relationships()
             for relationship in relationships.values():
                 self.extract_relationship(links, data_links, relationship)
 
