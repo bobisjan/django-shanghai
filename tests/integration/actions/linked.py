@@ -30,12 +30,16 @@ class PostLinkedTestCase(TestCase):
         response = self.client.get('/api/articles/4')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/articles/5')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/categories/2/articles')
         articles = response.document.get('data')
@@ -58,12 +62,16 @@ class PostLinkedTestCase(TestCase):
         response = self.client.get('/api/articles/1')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/articles/4')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/categories/2/articles')
         articles = response.document.get('data')
@@ -100,7 +108,12 @@ class PutLinkedTestCase(TestCase):
 
         response = self.client.get('/api/articles/1')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.document.get('data').get('links').get('category').get('id'), '2')
+
+        category = response.document.get('data').get('links').get('category')
+
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/articles/1/category')
         self.assertIsNotNone(response.document.get('data'))
@@ -120,12 +133,16 @@ class PutLinkedTestCase(TestCase):
         response = self.client.get('/api/articles/1')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/articles/4')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        linkage = category.get('linkage')
+        self.assertEqual(linkage.get('id'), '2')
+        self.assertEqual(linkage.get('type'), 'categories')
 
         response = self.client.get('/api/categories/2/articles')
         articles = response.document.get('data')

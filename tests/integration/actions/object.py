@@ -18,18 +18,20 @@ class GetObjectTestCase(TestCase):
         self.assertEqual(links.get('self'), 'http://testserver/api/articles/1')
 
         category = links.get('category')
+        linkage = category.get('linkage')
 
-        self.assertEqual(category.get('type'), 'categories')
-        self.assertEqual(category.get('id'), '1')
+        self.assertEqual(linkage.get('type'), 'categories')
+        self.assertEqual(linkage.get('id'), '1')
+
         self.assertEqual(category.get('self'), 'http://testserver/api/articles/1/links/category')
-        self.assertEqual(category.get('resource'), 'http://testserver/api/articles/1/category')
+        self.assertEqual(category.get('related'), 'http://testserver/api/articles/1/category')
 
         tags = links.get('tags')
+        linkage = tags.get('linkage')
 
-        self.assertEqual(tags.get('type'), 'tags')
-        self.assertListEqual(tags.get('ids'), ['1', '2'])
+        self.assertListEqual(linkage, [{'type': 'tags', 'id': '1'}, {'type': 'tags', 'id': '2'}])
         self.assertEqual(tags.get('self'), 'http://testserver/api/articles/1/links/tags')
-        self.assertEqual(tags.get('resource'), 'http://testserver/api/articles/1/tags')
+        self.assertEqual(tags.get('related'), 'http://testserver/api/articles/1/tags')
 
 
 
@@ -82,7 +84,12 @@ class PutObjectTestCase(TestCase):
 
         response = self.client.get('/api/articles/1')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.document.get('data').get('links').get('category').get('id'), '2')
+
+        links = response.document.get('data').get('links')
+        category = links.get('category')
+
+        self.assertEqual(category.get('linkage').get('id'), '2')
+        self.assertEqual(category.get('linkage').get('type'), 'categories')
 
         response = self.client.get('/api/articles/1/category')
         self.assertIsNotNone(response.document.get('data'))
@@ -110,12 +117,14 @@ class PutObjectTestCase(TestCase):
         response = self.client.get('/api/articles/1')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        self.assertEqual(category.get('linkage').get('id'), '2')
+        self.assertEqual(category.get('linkage').get('type'), 'categories')
 
         response = self.client.get('/api/articles/4')
         category = response.document.get('data').get('links').get('category')
 
-        self.assertEqual(category.get('id'), '2')
+        self.assertEqual(category.get('linkage').get('id'), '2')
+        self.assertEqual(category.get('linkage').get('type'), 'categories')
 
         response = self.client.get('/api/categories/2/articles')
         articles = response.document.get('data')
