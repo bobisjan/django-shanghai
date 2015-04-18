@@ -70,7 +70,7 @@ class Serializer(object):
 
         if related:
             related = self.key_for_relationship(related.name)
-            links['resource'] = self.resource.absolute_reverse_url(pk=pk, related=related)
+            links['related'] = self.resource.absolute_reverse_url(pk=pk, related=related)
         elif link:
             link = self.key_for_relationship(link.name)
             links['self'] = self.resource.absolute_reverse_url(pk=pk, link=link)
@@ -99,42 +99,34 @@ class Serializer(object):
         links[key] = link
 
     def link_for_belongs_to(self, obj, data, related, resource, relationship):
-        if not related:
+        link_object = dict(linkage=self.linkage_object(related, resource))
+
+        self.serialize_self_link(obj, data, link_object, link=relationship)
+        self.serialize_self_link(obj, data, link_object, related=relationship)
+
+        return link_object
+
+    def link_for_has_many(self, obj, data, related, resource, relationship):
+        linkage = [self.linkage_object(obj, resource) for obj in related]
+        link_object = dict(linkage=linkage)
+
+        self.serialize_self_link(obj, data, link_object, link=relationship)
+        self.serialize_self_link(obj, data, link_object, related=relationship)
+
+        return link_object
+
+    def linkage_object(self, obj, resource):
+        if not obj:
             return None
 
         resource_type = self.key_for_type(resource.type)
         primary_key = resource.primary_key()
 
-        pk = resource.fetch_id(related, primary_key)
+        pk = primary_key.get_from(obj)
         pk = primary_key.transform.serialize(pk)
         pk = self.normalize_id(pk)
 
-        link = dict(type=resource_type, id=pk)
-
-        self.serialize_self_link(obj, data, link, link=relationship)
-        self.serialize_self_link(obj, data, link, related=relationship)
-
-        return link
-
-    def link_for_has_many(self, obj, data, related, resource, relationship):
-        primary_key = resource.primary_key()
-        pks = list()
-
-        for obj in related:
-            pk = primary_key.get_from(obj)
-            pk = primary_key.transform.serialize(pk)
-            pk = self.normalize_id(pk)
-            pks.append(pk)
-
-        link = dict(
-            type=self.key_for_type(resource.type),
-            ids=pks
-        )
-
-        self.serialize_self_link(obj, data, link, link=relationship)
-        self.serialize_self_link(obj, data, link, related=relationship)
-
-        return link
+        return dict(type=resource_type, id=pk)
 
     def links_for_data(self, data):
         if 'links' not in data:
