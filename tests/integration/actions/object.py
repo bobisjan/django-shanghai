@@ -49,9 +49,9 @@ class GetEmptyObjectTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class PutObjectTestCase(TestCase):
+class PatchObjectTestCase(TestCase):
 
-    def test_app_should_put_article(self):
+    def test_app_should_patch_article(self):
         data = {
             'data': {
                 'type': 'articles',
@@ -60,7 +60,7 @@ class PutObjectTestCase(TestCase):
             }
         }
 
-        response = self.client.put('/api/articles/1', data)
+        response = self.client.patch('/api/articles/1', data)
 
         self.assertEqual(response.status_code, 204)
 
@@ -68,7 +68,7 @@ class PutObjectTestCase(TestCase):
 
         self.assertEqual(response.document.get('data').get('title'), 'Updated title')
 
-    def test_app_should_put_category_on_article(self):
+    def test_app_should_patch_category_on_article(self):
         data = {
             'data': {
                 'type': 'articles',
@@ -84,7 +84,7 @@ class PutObjectTestCase(TestCase):
             }
         }
 
-        response = self.client.put('/api/articles/1', data)
+        response = self.client.patch('/api/articles/1', data)
 
         self.assertEquals(response.status_code, 204)
 
@@ -101,8 +101,7 @@ class PutObjectTestCase(TestCase):
         self.assertIsNotNone(response.document.get('data'))
         self.assertEqual(response.document.get('data').get('id'), '2')
 
-
-    def test_app_should_put_articles_on_category(self):
+    def test_app_should_patch_articles_on_category(self):
         data = {
             'data': {
                 'type': 'categories',
@@ -121,7 +120,7 @@ class PutObjectTestCase(TestCase):
             }
         }
 
-        response = self.client.put('/api/categories/2', data)
+        response = self.client.patch('/api/categories/2', data)
 
         self.assertEquals(response.status_code, 204)
 

@@ -29,16 +29,16 @@ class Client(test.Client):
                                         secure=secure,
                                         **extra)
 
-    def put(self, path, data='', content_type=settings.CONTENT_TYPE, follow=False, secure=False, **extra):
+    def patch(self, path, data='', content_type=settings.CONTENT_TYPE, follow=False, secure=False, **extra):
         if data:
             data = json.dumps(data, cls=DjangoJSONEncoder)
 
-        return super(Client, self).put(path,
-                                       data=data,
-                                       content_type=content_type,
-                                       follow=follow,
-                                       secure=secure,
-                                       **extra)
+        return super(Client, self).patch(path,
+                                         data=data,
+                                         content_type=content_type,
+                                         follow=follow,
+                                         secure=secure,
+                                         **extra)
 
     def delete(self, path, data='', content_type=settings.CONTENT_TYPE, follow=False, secure=False, **extra):
         if data:

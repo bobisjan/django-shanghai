@@ -160,9 +160,9 @@ class PostLinkedTestCase(TestCase):
         self.assertEquals(response.status_code, 403)
 
 
-class PutLinkedTestCase(TestCase):
+class PatchLinkedTestCase(TestCase):
 
-    def test_app_should_put_category_on_article_using_links(self):
+    def test_app_should_patch_category_on_article_using_links(self):
         data = {
             'data': {
                 'type': 'categories',
@@ -170,7 +170,7 @@ class PutLinkedTestCase(TestCase):
             }
         }
 
-        response = self.client.put('/api/articles/1/links/category', data)
+        response = self.client.patch('/api/articles/1/links/category', data)
 
         self.assertEquals(response.status_code, 204)
 
@@ -186,7 +186,7 @@ class PutLinkedTestCase(TestCase):
         response = self.client.get('/api/articles/1/category')
         self.assertIsNotNone(response.document.get('data'))
 
-    def test_app_should_put_articles_on_category_using_links(self):
+    def test_app_should_patch_articles_on_category_using_links(self):
         data = {
             'data': {
                 'type': 'articles',
@@ -194,7 +194,7 @@ class PutLinkedTestCase(TestCase):
             }
         }
 
-        response = self.client.put('/api/categories/2/links/articles', data)
+        response = self.client.patch('/api/categories/2/links/articles', data)
 
         self.assertEquals(response.status_code, 204)
 

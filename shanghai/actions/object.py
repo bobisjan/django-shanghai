@@ -10,20 +10,20 @@ class ObjectMixin(object):
         obj = self.fetch_object()
         return self.response(obj)
 
-    def put_object(self):
+    def patch_object(self):
         obj = self.fetch_object()
         data = self.resolve_object_input()
 
         # TODO check self.pk with data.pk
 
-        updated_object = self.put_object_data(obj, data)
+        updated_object = self.patch_object_data(obj, data)
 
         if updated_object:
             return self.response(updated_object)
 
         return HttpResponseNoContent()
 
-    def put_object_data(self, obj, data):
+    def patch_object_data(self, obj, data):
         raise NotImplementedError()
 
     def delete_object(self):
@@ -40,7 +40,7 @@ class ObjectMixin(object):
 
 class ModelObjectMixin(ObjectMixin):
 
-    def put_object_data(self, obj, data):
+    def patch_object_data(self, obj, data):
         with transaction.atomic():
             self.save_object(obj, data)
 

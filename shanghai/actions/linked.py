@@ -32,16 +32,16 @@ class LinkedMixin(object):
     def post_linked_has_many(self, obj, relationship):
         raise NotImplementedError()
 
-    def put_linked(self):
+    def patch_linked(self):
         obj = self.fetch_object()
         relationship = self.linked_relationship()
         resource = self.linked_resource()
         data = self.resolve_linked_input()
 
         if relationship.is_belongs_to():
-            self.put_linked_belongs_to(obj, relationship, resource, data)
+            self.patch_linked_belongs_to(obj, relationship, resource, data)
         elif relationship.is_has_many():
-            self.put_linked_has_many(obj, relationship, resource, data)
+            self.patch_linked_has_many(obj, relationship, resource, data)
 
         return HttpResponseNoContent()
 
@@ -63,10 +63,10 @@ class LinkedMixin(object):
     def resolve_linked_input(self):
         return self.input.get('data')
 
-    def put_linked_belongs_to(self, obj, relationship, resource, data):
+    def patch_linked_belongs_to(self, obj, relationship, resource, data):
         raise NotImplementedError()
 
-    def put_linked_has_many(self, obj, relationship, resource, data):
+    def patch_linked_has_many(self, obj, relationship, resource, data):
         raise NotImplementedError()
 
     def delete_linked(self):
@@ -111,7 +111,7 @@ class ModelLinkedMixin(LinkedMixin):
         linked_objects = resource._get_objects_data(pks)
         related_manager.add(*linked_objects)
 
-    def put_linked_belongs_to(self, obj, relationship, resource, data):
+    def patch_linked_belongs_to(self, obj, relationship, resource, data):
         linked_obj = None
 
         if data:
@@ -121,7 +121,7 @@ class ModelLinkedMixin(LinkedMixin):
         relationship.set_to(obj, linked_obj)
         obj.save(update_fields=[relationship.name])
 
-    def put_linked_has_many(self, obj, relationship, resource, data):
+    def patch_linked_has_many(self, obj, relationship, resource, data):
         linked_objects = list()
         pks = data['ids']
 
