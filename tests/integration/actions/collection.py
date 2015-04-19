@@ -8,11 +8,21 @@ class GetCollectionTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertIsNotNone(links)
+        self.assertEqual(links.get('self'), 'http://testserver/api/articles')
+
         articles = response.document.get('data')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
         self.assertTrue(len(articles) > 0)
+
+        included = response.document.get('included', None)
+        self.assertIsNone(included)
 
 
 class GetEmptyCollectionTestCase(TestCase):
@@ -24,11 +34,21 @@ class GetEmptyCollectionTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertIsNotNone(links)
+        self.assertEqual(links.get('self'), 'http://testserver/api/articles')
+
         articles = response.document.get('data')
 
         self.assertIsNotNone(articles)
         self.assertIsInstance(articles, list)
         self.assertEqual(len(articles), 0)
+
+        included = response.document.get('included', None)
+        self.assertIsNone(included)
 
 
 class GetFilteredCollectionTestCase(TestCase):
@@ -139,8 +159,10 @@ class PostCollectionTestCase(TestCase):
                 'perex': 'Lorem ipsum...',
                 'links': {
                     'category': {
-                        'type': 'categories',
-                        'id': '1'
+                        'linkage': {
+                            'type': 'categories',
+                            'id': '1'
+                        }
                     }
                 }
             }

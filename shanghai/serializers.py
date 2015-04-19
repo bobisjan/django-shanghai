@@ -12,30 +12,55 @@ class Serializer(object):
     def __init__(self, resource):
         self.resource = resource
 
-    def serialize(self, object_or_iterable, links=None, **kwargs):
+    def serialize(self, object_or_iterable, parent=None, linked=None, related=None, **kwargs):
         document = dict()
 
-        document['data'] = self.serialize_object_or_iterable(object_or_iterable)
+        meta = self.serialize_document_meta(object_or_iterable, **kwargs)
+        if meta and len(meta):
+            document['meta'] = meta
 
-        if links:
+        links = self.serialize_document_links(object_or_iterable, parent, linked=linked, related=related, **kwargs)
+        if links and len(links):
             document['links'] = links
+
+        data = self.serialize_primary_data(object_or_iterable, linked=linked, **kwargs)
+        document['data'] = data
+
+        included = self.serialize_included(object_or_iterable, **kwargs)
+        if included and len(included):
+            document['included'] = included
 
         return document
 
-    def serialize_object_or_iterable(self, object_or_iterable):
+    def serialize_document_meta(self, object_or_iterable, **kwargs):
+        return self.resource.meta_for_document(object_or_iterable, **kwargs)
+
+    def serialize_object_meta(self, obj, **kwargs):
+        return self.resource.meta_for_object(obj, **kwargs)
+
+    def serialize_document_links(self, object_or_iterable, parent=None, linked=None, related=None, **kwargs):
+        resource = parent or self.resource
+        return resource.links_for_document(object_or_iterable, linked=linked, related=related, **kwargs)
+
+    def serialize_object_links(self, obj, **kwargs):
+        return self.resource.links_for_object(obj, **kwargs)
+
+    def serialize_primary_data(self, object_or_iterable, linked=None, **kwargs):
+        if linked:
+            return self.serialize_linked(object_or_iterable, linked)
+
         if is_iterable(object_or_iterable):
-            return self.serialize_iterable(object_or_iterable)
+            return self.serialize_collection(object_or_iterable, **kwargs)
         elif object_or_iterable:
-            return self.serialize_object(object_or_iterable)
+            return self.serialize_object(object_or_iterable, **kwargs)
 
-    def serialize_iterable(self, objects):
-        data = list()
+    def serialize_included(self, object_or_iterable, **kwargs):
+        return None
 
-        for obj in objects:
-            data.append(self.serialize_object(obj))
-        return data
+    def serialize_collection(self, collection, **kwargs):
+        return [self.serialize_object(obj, **kwargs) for obj in collection]
 
-    def serialize_object(self, obj):
+    def serialize_object(self, obj, **kwargs):
         data = dict()
 
         self.serialize_id(obj, data, self.resource.primary_key())
@@ -45,11 +70,15 @@ class Serializer(object):
         for key in attributes.keys():
             self.serialize_attribute(obj, data, attributes.get(key))
 
-        self.serialize_self_link(obj, data, self.links_for_data(data))
+        meta = self.serialize_object_meta(obj, **kwargs)
+        if meta and len(meta):
+            data['meta'] = meta
+
+        data['links'] = self.serialize_object_links(obj, **kwargs)
 
         relationships = self.resource.relationships()
         for key in relationships.keys():
-            self.serialize_relationship(obj, data, relationships.get(key))
+            self.serialize_relationship(obj, data, relationships.get(key), **kwargs)
 
         return data
 
@@ -63,57 +92,36 @@ class Serializer(object):
     def serialize_type(self, obj, data):
         data['type'] = self.key_for_type(self.resource.type)
 
-    def serialize_self_link(self, obj, data, links, link=None, related=None):
-        primary_key = self.resource.primary_key()
-        key = self.key_for_primary_key(primary_key.name)
-        pk = data[key]
-
-        if related:
-            related = self.key_for_relationship(related.name)
-            links['related'] = self.resource.absolute_reverse_url(pk=pk, related=related)
-        elif link:
-            link = self.key_for_relationship(link.name)
-            links['self'] = self.resource.absolute_reverse_url(pk=pk, link=link)
-        else:
-            links['self'] = self.resource.absolute_reverse_url(pk=pk)
-
     def serialize_attribute(self, obj, data, attribute):
         key = self.key_for_attribute(attribute.name)
         value = self.resource.fetch_attribute(obj, attribute)
         value = attribute.transform.serialize(value)
         data[key] = value
 
-    def serialize_relationship(self, obj, data, relationship):
-        resource = self.resource_for_relationship(relationship)
-        links = self.links_for_data(data)
-        link = None
+    def serialize_relationship(self, obj, data, relationship, **kwargs):
+        kwargs.setdefault('pk', data['id'])
+        link_object = self.resource.links_for_linked(obj, relationship, **kwargs)
+        links = data.setdefault('links', dict())
 
-        if relationship.is_has_many():
-            target = resource.fetch_has_many(obj, relationship)
-            link = self.link_for_has_many(obj, data, target, resource, relationship)
-        elif relationship.is_belongs_to():
-            target = resource.fetch_belongs_to(obj, relationship)
-            link = self.link_for_belongs_to(obj, data, target, resource, relationship)
+        link_object['linkage'] = self.serialize_linked(obj, relationship, fetch=True)
 
         key = self.key_for_relationship(relationship.name)
-        links[key] = link
+        links[key] = link_object
 
-    def link_for_belongs_to(self, obj, data, related, resource, relationship):
-        link_object = dict(linkage=self.linkage_object(related, resource))
+    def serialize_linked(self, obj, relationship, fetch=False):
+        resource = self.resource_for_relationship(relationship)
 
-        self.serialize_self_link(obj, data, link_object, link=relationship)
-        self.serialize_self_link(obj, data, link_object, related=relationship)
+        target = obj
+        if fetch:
+            if relationship.is_has_many():
+                target = resource.fetch_has_many(obj, relationship)
+            elif relationship.is_belongs_to():
+                target = resource.fetch_belongs_to(obj, relationship)
 
-        return link_object
-
-    def link_for_has_many(self, obj, data, related, resource, relationship):
-        linkage = [self.linkage_object(obj, resource) for obj in related]
-        link_object = dict(linkage=linkage)
-
-        self.serialize_self_link(obj, data, link_object, link=relationship)
-        self.serialize_self_link(obj, data, link_object, related=relationship)
-
-        return link_object
+        if relationship.is_has_many():
+            return [self.linkage_object(item, resource) for item in target]
+        elif relationship.is_belongs_to():
+            return self.linkage_object(target, resource)
 
     def linkage_object(self, obj, resource):
         if not obj:
@@ -127,11 +135,6 @@ class Serializer(object):
         pk = self.normalize_id(pk)
 
         return dict(type=resource_type, id=pk)
-
-    def links_for_data(self, data):
-        if 'links' not in data:
-            data['links'] = dict()
-        return data.get('links')
 
     def resource_for_relationship(self, relationship):
         return self.resource.api.resource_for(relationship.target)
@@ -195,7 +198,7 @@ class Serializer(object):
         if key not in data:
             return
 
-        value = data.get(key)
+        value = data[key]
         value = attribute.transform.deserialize(value)
 
         obj[attribute.name] = value
@@ -209,14 +212,15 @@ class Serializer(object):
         resource = self.resource_for_relationship(relationship)
         primary_key = resource.primary_key()
         transform = primary_key.transform
-        value = data.get(key)
+        linkage = data[key]['linkage']
 
-        if 'id' in value and value['id']:
-            value['id'] = transform.deserialize(value['id'])
-        elif 'ids' in value and value['ids']:
-            value['ids'] = list(map(transform.deserialize, value['ids']))
+        if relationship.is_belongs_to():
+            linkage['id'] = transform.deserialize(linkage['id'])
+        elif relationship.is_has_many():
+            for item in linkage:
+                item['id'] = transform.deserialize(item['id'])
 
-        obj[relationship.name] = value
+        obj[relationship.name] = linkage
 
     @staticmethod
     def normalize_id(value):

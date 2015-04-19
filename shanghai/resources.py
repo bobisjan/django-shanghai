@@ -12,7 +12,7 @@ from shanghai.serializers import Serializer
 
 class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
                FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin,
-               FilterMixin, SortMixin, PaginationMixin, object):
+               FilterMixin, SortMixin, PaginationMixin, LinkerMixin, object):
     """
     A base class for all resources.
     """
@@ -51,7 +51,6 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
             name = cls.__name__[:-len('Resource')]
             name = inflection.underscore(name)
             name = inflection.pluralize(name)
-
         return name
 
     def resolve_type(self):
@@ -59,12 +58,10 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
 
     def resolve_inspector(self):
         inspector = getattr(type(self), 'inspector', Inspector)
-
         return inspector(self)
 
     def resolve_serializer(self):
         serializer = getattr(type(self), 'serializer', Serializer)
-
         return serializer(self)
 
     def url_pattern_name(self, *args):
@@ -86,38 +83,38 @@ class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
 
         return url_patterns
 
-    def reverse_url(self, pk=None, link=None, related=None):
-        from django.core.urlresolvers import reverse
-
-        pattern_args = list()
-        reverse_args = list()
-
-        if pk:
-            pattern_args.append('pk')
-            reverse_args.append(pk)
-
-        if link:
-            pattern_args.append('link')
-            reverse_args.append(link)
-
-        if related:
-            pattern_args.append('related')
-            reverse_args.append(related)
-
-        name = self.url_pattern_name(*pattern_args)
-        url = reverse(name, args=reverse_args)
-
-        return url.replace('%2C', ',')
-
-    def absolute_reverse_url(self, pk=None, link=None, related=None):
-        return self.request.build_absolute_uri(self.reverse_url(pk, link, related))
-
     @property
     def urls(self):
         return self.generate_urls()
 
     def __str__(self):
         return self.name
+
+    # TODO find a suitable mixin
+
+    def process_collection(self, collection):
+        filters = self.filter_parameters()
+        sorters = self.sort_parameters()
+        pagination = self.pagination_parameters()
+
+        if len(filters):
+            collection = self.filter_collection(collection, **filters)
+
+        if len(sorters):
+            collection = self.sort_collection(collection, *sorters)
+
+        if pagination:
+            pagination['total'] = self.count_collection(collection)
+            collection = self.paginate_collection(collection, pagination)
+
+        return collection, dict(filters=filters, sorters=sorters, pagination=pagination)
+
+    def meta_for_document(self, object_or_iterable, **kwargs):
+        # TODO `pagination.total`
+        return None
+
+    def meta_for_object(self, obj, **kwargs):
+        return None
 
 
 class ModelResource(ModelCollectionMixin, ModelObjectMixin,
@@ -165,13 +162,13 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                 continue
 
             linked_resource = self.linked_resource(relationship)
-            linked_data = links.get(key)
+            linkage = links[key]
 
             if relationship.is_belongs_to():
                 linked_obj = None
 
-                if linked_data:
-                    pk = linked_data.get('id')
+                if linkage:
+                    pk = linkage['id']
                     linked_obj = linked_resource.fetch_object(pk)
 
                 relationship.set_to(obj, linked_obj)
@@ -192,11 +189,11 @@ class ModelResource(ModelCollectionMixin, ModelObjectMixin,
                 continue
 
             linked_resource = self.linked_resource(relationship)
-            linked_data = links.get(key)
+            linkage = links[key]
 
             if relationship.is_has_many():
                 related_manager = relationship.get_from(obj)
-                pks = linked_data.get('ids')
+                pks = [item['id'] for item in linkage]
                 linked_objects = list()
 
                 if len(pks):

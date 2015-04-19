@@ -1,6 +1,74 @@
 from tests.test_cases import TestCase
 
 
+class GetLinkedTestCase(TestCase):
+
+    def test_app_should_respond_with_not_found_for_non_existing_link(self):
+        response = self.client.get('/api/articles/4/links/categ')
+
+        self.assertEqual(response.status_code, 404)
+
+
+class GetLinkedBelongsToTestCase(TestCase):
+
+    def test_app_should_respond_with_category(self):
+        response = self.client.get('/api/articles/1/links/category')
+
+        self.assertEqual(response.status_code, 200)
+
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('self'), 'http://testserver/api/articles/1/links/category')
+        self.assertEqual(links.get('related'), 'http://testserver/api/articles/1/category')
+
+        category = response.document.get('data')
+
+        self.assertIsNotNone(category)
+        self.assertIsInstance(category, dict)
+        self.assertEqual(category.get('type'), 'categories')
+        self.assertEqual(category.get('id'), '1')
+
+        included = response.document.get('included', None)
+        self.assertIsNone(included)
+
+    def test_app_should_respond_with_empty_category(self):
+        response = self.client.get('/api/articles/4/links/category')
+
+        self.assertEqual(response.status_code, 200)
+
+        category = response.document.get('data')
+
+        self.assertIsNone(category)
+
+
+class GetLinkedHasManyTestCase(TestCase):
+
+    def test_app_should_respond_with_articles(self):
+        response = self.client.get('/api/categories/1/links/articles')
+
+        self.assertEqual(response.status_code, 200)
+
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('self'), 'http://testserver/api/categories/1/links/articles')
+
+        articles = response.document.get('data')
+
+        self.assertIsNotNone(articles)
+        self.assertIsInstance(articles, list)
+        self.assertTrue(len(articles) > 0)
+
+        self.assertEqual(articles[0].get('id'), '1')
+        self.assertEqual(articles[1].get('id'), '2')
+
+        included = response.document.get('included', None)
+        self.assertIsNone(included)
+
+
 class PostLinkedTestCase(TestCase):
 
     def test_app_should_not_post_category_on_article(self):

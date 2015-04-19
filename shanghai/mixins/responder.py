@@ -11,14 +11,16 @@ logger = logging.getLogger(__name__)
 
 class ResponderMixin(object):
 
-    def response(self, data, serializer=None, **kwargs):
+    def response(self, data, serializer=None, parent=None, linked=None, related=None, **kwargs):
         if not serializer:
             serializer = getattr(self, 'serializer')
 
-        serialized_data = serializer.serialize(data, **kwargs)
+        serialized_data = serializer.serialize(data, parent, linked=linked, related=related, **kwargs)
 
-        if 'links' in kwargs:
-            del kwargs['links']
+        # TODO refactor
+        for key in ['links', 'filters', 'sorters', 'pagination']:
+            if key in kwargs:
+                del kwargs[key]
 
         return JsonApiResponse(serialized_data, **kwargs)
 
