@@ -42,7 +42,7 @@ class DispatcherMixin(object):
         method = self.request.method.lower()
         body = self.request.body
 
-        if method in ('post', 'put', 'delete') and body is not None:
+        if method in ('post', 'patch', 'delete') and body is not None:
             body = body.decode(settings.DEFAULT_CHARSET)
 
             if body is None or not len(body):

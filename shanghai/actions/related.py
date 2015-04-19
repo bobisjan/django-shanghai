@@ -11,8 +11,6 @@ class RelatedMixin(object):
             return self.get_related_belongs_to(obj, relationship)
         elif relationship.is_has_many():
             return self.get_related_has_many(obj, relationship)
-        else:
-            raise ForbiddenError()
 
     def get_related_belongs_to(self, obj, relationship):
         raise NotImplementedError()
@@ -41,26 +39,10 @@ class ModelRelatedMixin(RelatedMixin):
     def get_related_belongs_to(self, obj, relationship):
         serializer = self.related_serializer()
         data = relationship.get_from(obj)
-
-        return self.response(data, serializer=serializer)
+        return self.response(data, serializer=serializer, parent=self, related=relationship)
 
     def get_related_has_many(self, obj, relationship):
-        collection = self.fetch_has_many(obj, relationship)
         serializer = self.related_serializer()
-        links = dict()
-
-        filters = self.filter_parameters()
-        if len(filters):
-            collection = self.filter_collection(collection, **filters)
-
-        order_by = self.sort_parameters()
-        if len(order_by):
-            collection = self.sort_collection(collection, *order_by)
-
-        pagination = self.pagination_parameters()
-        if pagination:
-            total = self.count_collection(collection)
-            collection = self.paginate_collection(collection, pagination)
-            self.add_pagination_links(links, pagination, total, pk=self.pk, related=self.related)
-
-        return self.response(collection, serializer=serializer, links=links)
+        collection = self.fetch_has_many(obj, relationship)
+        collection, params = self.process_collection(collection)
+        return self.response(collection, serializer=serializer, parent=self, related=relationship, **params)

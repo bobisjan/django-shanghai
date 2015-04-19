@@ -16,6 +16,12 @@ class GetRelatedBelongsToTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('self'), 'http://testserver/api/articles/1/category')
+
         category = response.document.get('data')
 
         self.assertIsNotNone(category)
@@ -23,6 +29,9 @@ class GetRelatedBelongsToTestCase(TestCase):
 
         links = category.get('links')
         self.assertEqual(links.get('self'), 'http://testserver/api/categories/1')
+
+        included = response.document.get('included', None)
+        self.assertIsNone(included)
 
     def test_app_should_respond_with_empty_category(self):
         response = self.client.get('/api/articles/4/category')
@@ -41,6 +50,12 @@ class GetRelatedHasManyTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertEqual(links.get('self'), 'http://testserver/api/categories/1/articles')
+
         articles = response.document.get('data')
 
         self.assertIsNotNone(articles)
@@ -50,6 +65,9 @@ class GetRelatedHasManyTestCase(TestCase):
         for article in articles:
             links = article.get('links')
             self.assertEqual(links.get('self'), 'http://testserver/api/articles/' + article.get('id'))
+
+        included = response.document.get('included', None)
+        self.assertIsNone(included)
 
 
 class GetFilteredRelatedTestCase(TestCase):
