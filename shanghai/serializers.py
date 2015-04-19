@@ -209,18 +209,20 @@ class Serializer(object):
         if key not in data:
             return
 
+        linkage = self.extract_linkage(data[key]['linkage'], relationship)
+        obj[relationship.name] = linkage
+
+    def extract_linkage(self, data, relationship):
         resource = self.resource_for_relationship(relationship)
         primary_key = resource.primary_key()
-        transform = primary_key.transform
-        linkage = data[key]['linkage']
 
         if relationship.is_belongs_to():
-            linkage['id'] = transform.deserialize(linkage['id'])
+            data['id'] = primary_key.transform.deserialize(data['id'])
         elif relationship.is_has_many():
-            for item in linkage:
-                item['id'] = transform.deserialize(item['id'])
+            for item in data:
+                item['id'] = primary_key.transform.deserialize(item['id'])
 
-        obj[relationship.name] = linkage
+        return data
 
     @staticmethod
     def normalize_id(value):

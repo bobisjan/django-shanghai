@@ -61,7 +61,8 @@ class LinkedMixin(object):
         return resource
 
     def resolve_linked_input(self):
-        return self.input.get('data')
+        relationship = self.linked_relationship()
+        return self.serializer.extract_linkage(self.input['data'], relationship)
 
     def patch_linked_belongs_to(self, obj, relationship, resource, data):
         raise NotImplementedError()
@@ -102,7 +103,7 @@ class ModelLinkedMixin(LinkedMixin):
         data = self.resolve_linked_input()
         resource = self.linked_resource()
 
-        pks = data['ids']
+        pks = [item['id'] for item in data]
 
         count = related_manager.all().filter(pk__in=pks).count()
         if count > 0:
@@ -123,7 +124,7 @@ class ModelLinkedMixin(LinkedMixin):
 
     def patch_linked_has_many(self, obj, relationship, resource, data):
         linked_objects = list()
-        pks = data['ids']
+        pks = [item['id'] for item in data]
 
         if len(pks):
             linked_objects = resource._get_objects_data(pks)
@@ -133,7 +134,7 @@ class ModelLinkedMixin(LinkedMixin):
     def delete_linked_has_many(self, obj, data, relationship):
         related_manager = relationship.get_from(obj)
         resource = self.linked_resource()
-        pks = data['ids']
+        pks = [item['id'] for item in data]
         linked_objects = resource._get_objects_data(pks)
 
         related_manager.remove(*linked_objects)

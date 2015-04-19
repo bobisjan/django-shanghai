@@ -85,10 +85,13 @@ class PostLinkedTestCase(TestCase):
 
     def test_app_should_post_articles_on_category(self):
         data = {
-            'data': {
+            'data': [{
                 'type': 'articles',
-                'ids': ['4', '5']
-            }
+                'id': '4'
+            }, {
+                'type': 'articles',
+                'id': '5'
+            }]
         }
 
         response = self.client.post('/api/categories/2/links/articles', data)
@@ -117,10 +120,13 @@ class PostLinkedTestCase(TestCase):
 
     def test_app_should_post_articles_on_category_using_links(self):
         data = {
-            'data': {
+            'data': [{
                 'type': 'articles',
-                'ids': ['1', '4']
-            }
+                'id': '1'
+            }, {
+                'type': 'articles',
+                'id': '4'
+            }]
         }
 
         response = self.client.post('/api/categories/2/links/articles', data)
@@ -149,10 +155,13 @@ class PostLinkedTestCase(TestCase):
 
     def test_app_should_not_post_articles_on_category_with_already_set_ones(self):
         data = {
-            'data': {
+            'data': [{
                 'type': 'articles',
-                'ids': ['1', '3']
-            }
+                'id': '1'
+            }, {
+                'type': 'articles',
+                'id': '3'
+            }]
         }
 
         response = self.client.post('/api/categories/1/links/articles', data)
@@ -188,10 +197,13 @@ class PatchLinkedTestCase(TestCase):
 
     def test_app_should_patch_articles_on_category_using_links(self):
         data = {
-            'data': {
+            'data': [{
                 'type': 'articles',
-                'ids': ['1', '4']
-            }
+                'id': '1'
+            }, {
+                'type': 'articles',
+                'id': '4'
+            }]
         }
 
         response = self.client.patch('/api/categories/2/links/articles', data)
@@ -223,10 +235,16 @@ class DeleteHasManyTestCase(TestCase):
 
     def test_app_should_delete_articles_on_category(self):
         data = {
-            'data': {
+            'data': [{
                 'type': 'articles',
-                'ids': ['1', '2', '3']
-            }
+                'id': '1'
+            }, {
+                'type': 'articles',
+                'id': '2'
+            }, {
+                'type': 'articles',
+                'id': '3'
+            }]
         }
 
         response = self.client.delete('/api/categories/1/links/articles', data)
