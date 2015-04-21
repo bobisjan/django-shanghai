@@ -49,6 +49,15 @@ class GetEmptyObjectTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class GetIncludedObjectTestCase(TestCase):
+
+    def test_app_should_respond_with_article_and_included(self):
+        response = self.client.get('/api/articles/1?include=category')
+        included = response.document.get('included', None)
+        self.assertIsNotNone(included)
+        [self.assertEqual('categories', item['type']) for item in included]
+
+
 class PatchObjectTestCase(TestCase):
 
     def test_app_should_patch_article(self):

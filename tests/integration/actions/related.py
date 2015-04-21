@@ -139,3 +139,27 @@ class GetPaginatedHasManyTestCase(TestCase):
         self.assertIsNone(links.get('prev'))
         self.assertIsNone(links.get('next'))
         self.assertEqual(links.get('last'), 'http://testserver/api/articles/1/tags?page[offset]=0&page[limit]=2')
+
+
+class GetIncludedRelatedBelongsToTestCase(TestCase):
+
+    def test_app_should_respond_with_related_category_and_included(self):
+        response = self.client.get('/api/articles/1/category?include=articles')
+
+        self.assertEqual(response.status_code, 200)
+
+        included = response.document.get('included', None)
+        self.assertIsNotNone(included)
+        [self.assertEqual('articles', item['type']) for item in included]
+
+
+class GetIncludedRelatedHasManyTestCase(TestCase):
+
+    def test_app_should_respond_with_related_articles_and_included(self):
+        response = self.client.get('/api/categories/1/articles?include=category')
+
+        self.assertEqual(response.status_code, 200)
+
+        included = response.document.get('included', None)
+        self.assertIsNotNone(included)
+        [self.assertEqual('categories', item['type']) for item in included]

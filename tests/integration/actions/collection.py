@@ -149,6 +149,31 @@ class GetPaginatedCollectionTestCase(TestCase):
         self.assertEqual(links.get('last'), 'http://testserver/api/articles?page[offset]=4&page[limit]=2')
 
 
+class GetIncludedCollectionTestCase(TestCase):
+
+    def test_app_should_respond_with_articles_and_included(self):
+        response = self.client.get('/api/articles?include=category')
+
+        self.assertEqual(response.status_code, 200)
+
+        meta = response.document.get('meta', None)
+        self.assertIsNone(meta)
+
+        links = response.document.get('links')
+        self.assertIsNotNone(links)
+        self.assertEqual(links.get('self'), 'http://testserver/api/articles')
+
+        articles = response.document.get('data')
+
+        self.assertIsNotNone(articles)
+        self.assertIsInstance(articles, list)
+        self.assertTrue(len(articles) > 0)
+
+        included = response.document.get('included', None)
+        self.assertIsNotNone(included)
+        [self.assertEqual('categories', item['type']) for item in included]
+
+
 class PostCollectionTestCase(TestCase):
 
     def test_app_should_create_article(self):
