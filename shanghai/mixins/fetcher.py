@@ -5,8 +5,9 @@ from shanghai.exceptions import NotFoundError
 
 class FetcherMixin(object):
 
-    def fetch_id(self, obj, id):
-        return id.get_from(obj)
+    def fetch_id(self, obj, primary_key=None):
+        primary_key = primary_key or self.primary_key()
+        return primary_key.get_from(obj)
 
     def fetch_attribute(self, obj, attribute):
         return attribute.get_from(obj)

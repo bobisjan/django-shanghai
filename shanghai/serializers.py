@@ -54,8 +54,9 @@ class Serializer(object):
         elif object_or_iterable:
             return self.serialize_object(object_or_iterable, **kwargs)
 
-    def serialize_included(self, object_or_iterable, **kwargs):
-        return None
+    def serialize_included(self, object_or_iterable, parent=None, related=None, **kwargs):
+        included = self.resource.included_for(object_or_iterable, parent=parent, related=related, **kwargs)
+        return [resource.serializer.serialize_object(obj, **kwargs) for (resource, obj) in included]
 
     def serialize_collection(self, collection, **kwargs):
         return [self.serialize_object(obj, **kwargs) for obj in collection]
