@@ -174,6 +174,16 @@ class GetIncludedCollectionTestCase(TestCase):
         [self.assertEqual('categories', item['type']) for item in included]
 
 
+class GetSparseCollectionTestCase(TestCase):
+
+    def test_app_should_respond_with_sparse_articles(self):
+        response = self.client.get('/api/articles?fields[articles]=title,category')
+
+        articles = response.document.get('data')
+        for article in articles:
+            self.assertSparseObject(article, (('title',), ('perex',)), (('category',), ('tags',)))
+
+
 class PostCollectionTestCase(TestCase):
 
     def test_app_should_create_article(self):

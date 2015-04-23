@@ -58,6 +58,15 @@ class GetIncludedObjectTestCase(TestCase):
         [self.assertEqual('categories', item['type']) for item in included]
 
 
+class GetSparseObjectTestCase(TestCase):
+
+    def test_app_should_respond_with_sparse_article(self):
+        response = self.client.get('/api/articles/1?fields[articles]=title,category')
+        article = response.document.get('data', None)
+
+        self.assertSparseObject(article, (('title',), ('perex',)), (('category',), ('tags',)))
+
+
 class PatchObjectTestCase(TestCase):
 
     def test_app_should_patch_article(self):
