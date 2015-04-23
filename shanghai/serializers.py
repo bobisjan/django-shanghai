@@ -23,6 +23,7 @@ class Serializer(object):
         if links and len(links):
             document['links'] = links
 
+        kwargs.setdefault('fields', self.resource.get_fieldsets(related))
         data = self.serialize_primary_data(object_or_iterable, linked=linked, **kwargs)
         document['data'] = data
 
@@ -62,14 +63,17 @@ class Serializer(object):
         return [self.serialize_object(obj, **kwargs) for obj in collection]
 
     def serialize_object(self, obj, **kwargs):
+        fields = kwargs.get('fields', None)
+        resource = self.resource
         data = dict()
 
         self.serialize_id(obj, data, self.resource.primary_key())
         self.serialize_type(obj, data)
 
-        attributes = self.resource.attributes()
-        for key in attributes.keys():
-            self.serialize_attribute(obj, data, attributes.get(key))
+        attributes = resource.attributes()
+        for attribute in attributes.values():
+            if not self.exclude_field(fields, resource, attribute):
+                self.serialize_attribute(obj, data, attribute)
 
         meta = self.serialize_object_meta(obj, **kwargs)
         if meta and len(meta):
@@ -77,11 +81,15 @@ class Serializer(object):
 
         data['links'] = self.serialize_object_links(obj, **kwargs)
 
-        relationships = self.resource.relationships()
-        for key in relationships.keys():
-            self.serialize_relationship(obj, data, relationships.get(key), **kwargs)
+        relationships = resource.relationships()
+        for relationship in relationships.values():
+            if not self.exclude_field(fields, resource, relationship):
+                self.serialize_relationship(obj, data, relationship, **kwargs)
 
         return data
+
+    def exclude_field(self, fields, resource, field):
+        return fields and resource in fields and field not in fields[resource]
 
     def serialize_id(self, obj, data, primary_key):
         key = self.key_for_primary_key(primary_key.name)

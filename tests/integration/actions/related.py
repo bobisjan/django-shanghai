@@ -43,6 +43,15 @@ class GetRelatedBelongsToTestCase(TestCase):
         self.assertIsNone(category)
 
 
+class GetSparseRelatedBelongsToTestCase(TestCase):
+
+    def test_app_should_respond_with_sparse_category(self):
+        response = self.client.get('/api/articles/1/category?fields[categories]=name')
+        category = response.document.get('data')
+
+        self.assertSparseObject(category, (('name',), ()), ((), ('articles',)))
+
+
 class GetRelatedHasManyTestCase(TestCase):
 
     def test_app_should_respond_with_articles(self):
@@ -139,6 +148,16 @@ class GetPaginatedHasManyTestCase(TestCase):
         self.assertIsNone(links.get('prev'))
         self.assertIsNone(links.get('next'))
         self.assertEqual(links.get('last'), 'http://testserver/api/articles/1/tags?page[offset]=0&page[limit]=2')
+
+
+class GetSparseHasManyTestCase(TestCase):
+
+    def test_app_should_respond_with_sparse_tags(self):
+        response = self.client.get('/api/articles/1/tags?fields[tags]=name')
+        tags = response.document.get('data')
+
+        for tag in tags:
+            self.assertSparseObject(tag, (('name',), []), ([], ('articles',)))
 
 
 class GetIncludedRelatedBelongsToTestCase(TestCase):

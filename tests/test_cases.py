@@ -60,3 +60,24 @@ class TestCase(test.TestCase):
 
     def setUp(self):
         self.api = shanghai.api
+
+    def assertObject(self, obj):
+        self.assertIsNotNone(obj)
+        self.assertIsInstance(obj, dict)
+
+        self.assertTrue('type' in obj)
+        self.assertTrue('id' in obj)
+
+        self.assertTrue('links' in obj)
+        self.assertIsInstance(obj['links'], dict)
+
+        self.assertTrue('self' in obj['links'])
+
+    def assertSparseObject(self, obj, attributes, relationships):
+        self.assertObject(obj)
+
+        [self.assertTrue(inc in obj) for inc in attributes[0]]
+        [self.assertFalse(inc in obj) for inc in attributes[1]]
+
+        [self.assertTrue(inc in obj['links']) for inc in relationships[0]]
+        [self.assertFalse(inc in obj['links']) for inc in relationships[1]]

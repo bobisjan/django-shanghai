@@ -12,8 +12,8 @@ from shanghai.serializers import Serializer
 
 class Resource(CollectionMixin, ObjectMixin, LinkedMixin, RelatedMixin,
                FetcherMixin, MetaMixin, ResponderMixin, DispatcherMixin,
-               FilterMixin, SortMixin, PaginationMixin,
-               LinkerMixin, InclusionMixin, object):
+               FilterMixin, SortMixin, PaginationMixin, LinkerMixin,
+               InclusionMixin, FieldsMixin, object):
     """
     A base class for all resources.
     """
