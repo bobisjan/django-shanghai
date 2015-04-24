@@ -1,13 +1,4 @@
-from django.http import HttpResponse, JsonResponse
-
-from shanghai.conf import settings
-
-
-class JsonApiResponse(JsonResponse):
-
-    def __init__(self, data, **kwargs):
-        kwargs.setdefault('content_type', settings.CONTENT_TYPE)
-        super(JsonApiResponse, self).__init__(data=data, **kwargs)
+from django.http import HttpResponse
 
 
 class HttpResponseNoContent(HttpResponse):
