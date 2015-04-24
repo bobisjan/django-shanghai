@@ -1,7 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError
+from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError, JsonResponse
 
-from shanghai.http import HttpResponseConflict, JsonApiResponse
+from shanghai.conf import settings
+from shanghai.http import HttpResponseConflict
 
 
 class BaseError(Exception):
@@ -70,13 +71,14 @@ class ModelValidationError(BaseError):
 
     def get_response(self, **kwargs):
         kwargs.setdefault('status', 400)
+        kwargs.setdefault('content_type', settings.CONTENT_TYPE)
 
         errors = list()
 
         validation_errors = self.from_validation_error(error, **kwargs)
         errors.extend(validation_errors)
 
-        return JsonApiResponse(dict(errors=errors), **kwargs)
+        return JsonResponse(dict(errors=errors), **kwargs)
 
     def from_validation_error(self, error, **kwargs):
         errors = list()

@@ -50,6 +50,9 @@ class DispatcherMixin(object):
 
             return json.loads(body)
 
+    def is_post_collection(self):
+        return self.action[0] == 'post' and self.action[1] == 'collection'
+
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         setattrs(self, request=request, args=args, kwargs=kwargs)
